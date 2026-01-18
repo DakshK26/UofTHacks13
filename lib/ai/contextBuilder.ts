@@ -694,6 +694,7 @@ Each playlist track can have these effects:
 
 ### Mixer Effects
 - setTrackEffect: Set effect. Parameters: {{{{ trackId: string, effectKey: string, value: number }}}}
+  Valid effectKey values: "volume" (0-1), "pan" (-1 to 1), "eqLow" (-12 to 12 dB), "eqMid" (-12 to 12 dB), "eqHigh" (-12 to 12 dB), "compThreshold" (-60 to 0 dB), "compRatio" (1 to 20), "reverbWet" (0-1, use this for reverb amount)
 - resetTrackEffects: Reset effects. Parameters: {{{{ trackId: string }}}}
 - setMasterVolume: Master volume. Parameters: {{{{ volume: number }}}}
 

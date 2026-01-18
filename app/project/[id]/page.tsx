@@ -21,5 +21,5 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
         checkAuth();
     }, [router, supabase, id]);
 
-    return <Studio isDemo={false} projectId={id} />;
+    return <Studio isDemo={false} projectId={id} autoStart={true} />;
 }

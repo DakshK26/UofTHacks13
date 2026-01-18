@@ -83,6 +83,11 @@ export type TaskType = 'creative' | 'technical' | 'analytical' | 'fallback';
 export function classifyTask(userInput: string): TaskType {
   const input = userInput.toLowerCase();
 
+  // PRIORITY: Any input with a number routes to technical (parameter changes)
+  if (/\d+/.test(input)) {
+    return 'technical';
+  }
+
   // Analytical task patterns - explanations, analysis, feedback, theory
   const analyticalPatterns = [
     /explain/,
@@ -108,17 +113,26 @@ export function classifyTask(userInput: string): TaskType {
 
   // Creative task patterns - musical creation, suggestions, artistic requests
   const creativePatterns = [
-    /make\s+(a\s+)?beat/,
-    /create\s+(a\s+)?(beat|melody|chord|bass|pattern)/,
-    /add\s+(a\s+)?(melody|chord|piano|bass|lead|pad)/,
+    // Beat/melody/music creation (various verbs)
+    /make\s+(a\s+)?(\w+\s+)?(beat|melody|chord|bass|pattern|music|song|track)/,
+    /create\s+(a\s+)?(\w+\s+)?(beat|melody|chord|bass|pattern|music|song|track)/,
+    /generate\s+(a\s+)?(\w+\s+)?(beat|melody|music|pattern)/,
+    /write\s+(a\s+)?(\w+\s+)?(melody|chord|bass|song)/,
+    /compose\s+(a\s+)?(\w+\s+)?(melody|beat|song|piece)?/,
+    // Adding musical elements (creative, not editing)
+    /add\s+(a\s+)?(\w+\s+)?(melody|chord|piano|bass|lead|pad|synth)/,
+    // Genre keywords - these are always creative
+    /hip\s*hop|trap|house|edm|jazz|funk|rock|pop|lofi|rap/,
+    /boom\s*bap|drill|phonk|reggaeton|r&b|soul/,
+    // Style/mood descriptors
+    /catchy|groovy|chill|energetic|dark|bright|sad|happy|upbeat/,
+    // Creative actions
     /suggest/,
-    /compose/,
-    /generate\s+(a\s+)?(beat|melody|music)/,
-    /write\s+(a\s+)?(melody|chord|bass)/,
-    /hip\s*hop|trap|house|edm|jazz|funk|rock|pop|lofi/,
-    /boom\s*bap|drill|phonk|reggaeton/,
-    /catchy|groovy|chill|energetic|dark|bright/,
     /improvise|freestyle|jam/,
+    // Instrument-focused creation
+    /piano\s+(melody|part|line)/,
+    /drum\s+(beat|pattern|loop)/,
+    /bass\s+(line|pattern|groove)/,
   ];
 
   // Technical task patterns - precise operations, settings, transport, modifications
@@ -128,6 +142,14 @@ export function classifyTask(userInput: string): TaskType {
     /bpm\s+(to|=)\s*\d+/,
     /tempo\s+(to|=)\s*\d+/,
     /\d+\s*bpm/,
+    // Increase/decrease operations (BPM, volume, pan, etc.)
+    /(increase|decrease|raise|lower|bump)\s+(the\s+)?(bpm|tempo|volume|pan)/,
+    /(bpm|tempo|volume|pan)\s+(up|down)/,
+    /by\s+\d+\s*(bpm)?/,
+    // Faster/slower tempo changes
+    /(faster|slower)\s*(tempo|bpm)?/,
+    /speed\s+(up|down)/,
+    /(double|half|halve)\s+(the\s+)?(tempo|bpm|speed)/,
     // Transport controls
     /^(play|stop|pause|record)$/,
     /^play$/,
@@ -177,27 +199,33 @@ export function classifyTask(userInput: string): TaskType {
     }
   }
 
-  // Check for technical patterns BEFORE creative (technical is more specific)
-  // This prevents "extend the melody" from matching "melody" in creative
-  for (const pattern of technicalPatterns) {
-    if (pattern.test(input)) {
-      return 'technical';
-    }
-  }
-
-  // Check for creative patterns last
+  // Check for creative patterns BEFORE technical
+  // Creative requests like "make a rap beat" should go to Gemini
   for (const pattern of creativePatterns) {
     if (pattern.test(input)) {
       return 'creative';
     }
   }
 
-  // Default to creative for ambiguous requests (more interesting responses)
-  // Short commands default to technical
+  // Check for technical patterns after creative
+  for (const pattern of technicalPatterns) {
+    if (pattern.test(input)) {
+      return 'technical';
+    }
+  }
+
+  // Default logic for unmatched inputs
+  // If input contains a number AND looks like a parameter change, route to technical
+  if (/\d+/.test(input) && /(bpm|tempo|volume|pan|by|to|=)/.test(input)) {
+    return 'technical';
+  }
+
+  // Very short commands (3 words or less) without creative keywords → technical
   if (input.split(' ').length <= 3) {
     return 'technical';
   }
 
+  // Default to creative for ambiguous musical requests
   return 'creative';
 }
 
@@ -251,6 +279,7 @@ Available actions:
 - addChannel: Add instrument. Parameters: {{{{ name?: string, type: "synth"|"sampler", preset?: string }}}}
 - addClip: Add clip to playlist. Parameters: {{{{ patternId: string, trackIndex: number, startTick: number }}}}
 - setTrackEffect: Set mixer effect. Parameters: {{{{ trackId: string, effectKey: string, value: number }}}}
+  Valid effectKey: "volume" (0-1), "pan" (-1 to 1), "eqLow", "eqMid", "eqHigh" (-12 to 12), "compThreshold" (-60 to 0), "compRatio" (1-20), "reverbWet" (0-1 for reverb)
 - addAudioSample: Add sample. Parameters: {{{{ category: string, subcategory: string, trackIndex?: number, startTick?: number }}}}
 - clarificationNeeded: When unclear. Parameters: {{{{ message: string, suggestedOptions?: string[] }}}}
 
