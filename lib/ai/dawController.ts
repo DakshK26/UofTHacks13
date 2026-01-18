@@ -78,7 +78,7 @@ export function executePatternCommand(
 
     try {
       store.addPattern(cmd.name);
-      
+
       // Set length if specified
       if (cmd.lengthInSteps && store.project) {
         const newPattern = store.project.patterns[store.project.patterns.length - 1];
@@ -935,8 +935,12 @@ export function executeEffectCommand(
  * @returns Result with success status and message
  */
 export function executeCommand(command: AICommand): CommandResult {
+  // Log incoming command
+  console.log('[DAW Controller] Executing command:', command.action, command);
+
   // Handle special commands
   if (command.action === 'unknown') {
+    console.warn('[DAW Controller] Unknown command received:', command.originalText);
     return {
       success: false,
       message: `Could not understand command: ${command.reason || 'Unknown reason'}`,
@@ -945,6 +949,7 @@ export function executeCommand(command: AICommand): CommandResult {
   }
 
   if (command.action === 'clarificationNeeded') {
+    console.log('[DAW Controller] Clarification needed:', command.message);
     return {
       success: false,
       message: command.message,
@@ -954,18 +959,18 @@ export function executeCommand(command: AICommand): CommandResult {
 
   // Route to appropriate executor
   try {
+    let result: CommandResult;
+
     // Pattern commands
     if (command.action === 'addPattern' || command.action === 'deletePattern') {
-      return executePatternCommand(command);
+      result = executePatternCommand(command);
     }
-
     // Note commands
-    if (command.action === 'addNote' || command.action === 'updateNote' || command.action === 'deleteNote') {
-      return executeNoteCommand(command);
+    else if (command.action === 'addNote' || command.action === 'updateNote' || command.action === 'deleteNote') {
+      result = executeNoteCommand(command);
     }
-
     // Transport commands
-    if (
+    else if (
       command.action === 'play' ||
       command.action === 'stop' ||
       command.action === 'pause' ||
@@ -973,53 +978,59 @@ export function executeCommand(command: AICommand): CommandResult {
       command.action === 'setPosition' ||
       command.action === 'toggleMetronome'
     ) {
-      return executeTransportCommand(command);
+      result = executeTransportCommand(command);
     }
-
     // Channel commands
-    if (
+    else if (
       command.action === 'addChannel' ||
       command.action === 'updateChannel' ||
       command.action === 'deleteChannel'
     ) {
-      return executeChannelCommand(command);
+      result = executeChannelCommand(command);
     }
-
     // Mixer commands
-    if (
+    else if (
       command.action === 'setVolume' ||
       command.action === 'setPan' ||
       command.action === 'toggleMute' ||
       command.action === 'toggleSolo'
     ) {
-      return executeMixerCommand(command);
+      result = executeMixerCommand(command);
     }
-
     // Playlist commands
-    if (
+    else if (
       command.action === 'addClip' ||
       command.action === 'moveClip' ||
       command.action === 'resizeClip' ||
       command.action === 'deleteClip' ||
       command.action === 'setLoopRegion'
     ) {
-      return executePlaylistCommand(command);
+      result = executePlaylistCommand(command);
     }
-
     // Effect commands
-    if (
+    else if (
       command.action === 'addEffect' ||
       command.action === 'updateEffect' ||
       command.action === 'deleteEffect'
     ) {
-      return executeEffectCommand(command);
+      result = executeEffectCommand(command);
+    }
+    // Unhandled command type
+    else {
+      result = {
+        success: false,
+        message: `Command type "${command.action}" is not yet implemented`,
+      };
     }
 
-    // If we get here, command type wasn't handled
-    return {
-      success: false,
-      message: `Command type "${command.action}" is not yet implemented`,
-    };
+    // Log execution result
+    if (result.success) {
+      console.log('[DAW Controller] ✓ Command executed successfully:', result.message);
+    } else {
+      console.warn('[DAW Controller] ✗ Command failed:', result.message);
+    }
+
+    return result;
   } catch (error) {
     console.error('[DAW Controller] Error executing command:', error);
     return {

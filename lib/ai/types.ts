@@ -136,22 +136,7 @@ export interface ToggleChannelSoloCommand extends BaseCommand {
 // Mixer commands
 export interface SetVolumeCommand extends BaseCommand {
   action: 'setVolume';
- 
-
-export interface AddPlaylistTrackCommand extends BaseCommand {
-  action: 'addPlaylistTrack';
-  name?: string;
-}
-
-export interface TogglePlaylistTrackMuteCommand extends BaseCommand {
-  action: 'togglePlaylistTrackMute';
-  trackId: string;
-}
-
-export interface TogglePlaylistTrackSoloCommand extends BaseCommand {
-  action: 'togglePlaylistTrackSolo';
-  trackId: string;
-} trackIndex: number;
+  trackIndex: number;
   volume: number;
 }
 
@@ -169,6 +154,22 @@ export interface ToggleMuteCommand extends BaseCommand {
 export interface ToggleSoloCommand extends BaseCommand {
   action: 'toggleSolo';
   trackIndex: number;
+}
+
+// Playlist track commands
+export interface AddPlaylistTrackCommand extends BaseCommand {
+  action: 'addPlaylistTrack';
+  name?: string;
+}
+
+export interface TogglePlaylistTrackMuteCommand extends BaseCommand {
+  action: 'togglePlaylistTrackMute';
+  trackId: string;
+}
+
+export interface TogglePlaylistTrackSoloCommand extends BaseCommand {
+  action: 'togglePlaylistTrackSolo';
+  trackId: string;
 }
 
 // Playlist/Clip commands
@@ -189,7 +190,22 @@ export interface MoveClipCommand extends BaseCommand {
 
 export interface ResizeClipCommand extends BaseCommand {
   action: 'resizeClip';
-  clipId: string; (TrackEffects - simple inline mixer)
+  clipId: string;
+  durationTick: number;
+}
+
+export interface DeleteClipCommand extends BaseCommand {
+  action: 'deleteClip';
+  clipId: string;
+}
+
+export interface SetLoopRegionCommand extends BaseCommand {
+  action: 'setLoopRegion';
+  startTick: number;
+  endTick: number;
+}
+
+// TrackEffects commands (simple inline mixer)
 export interface SetTrackEffectCommand extends BaseCommand {
   action: 'setTrackEffect';
   trackId: string;
@@ -223,7 +239,17 @@ export interface UpdateEffectCommand extends BaseCommand {
   action: 'updateEffect';
   effectId: string;
   parameters: Record<string, number>;
-}SetPatternLengthCommand
+}
+
+export interface DeleteEffectCommand extends BaseCommand {
+  action: 'deleteEffect';
+  effectId: string;
+}
+
+// Union type of all possible commands
+export type AICommand =
+  | AddPatternCommand
+  | SetPatternLengthCommand
   | DeletePatternCommand
   | SelectPatternCommand
   | OpenPianoRollCommand
@@ -264,9 +290,26 @@ export interface UpdateEffectCommand extends BaseCommand {
   | UpdateEffectCommand
   | DeleteEffectCommand
   | AddAudioSampleCommand
-  | AddAudioSampleToNewTrackfect';
-  trackIndex: number;
-  effectType: 'reverb' | 'delay' | 'eq' | 'compressor' | 'distortion';
+  | AddAudioSampleToNewTrackCommand
+  | ClarificationNeededCommand
+  | UnknownCommand;
+
+// Sample commands
+export interface AddAudioSampleCommand extends BaseCommand {
+  action: 'addAudioSample';
+  sampleId?: string;
+  category?: string;
+  subcategory?: string;
+  sampleName?: string;
+  trackIndex?: number;
+}
+
+export interface AddAudioSampleToNewTrackCommand extends BaseCommand {
+  action: 'addAudioSampleToNewTrack';
+  assetId: string;
+  name: string;
+  startTick: number;
+  durationTick: number;
 }
 
 export interface UpdateEffectCommand extends BaseCommand {
