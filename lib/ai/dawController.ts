@@ -503,13 +503,14 @@ export async function executeSampleCommand(cmd: AddAudioSampleCommand): Promise<
     const startTick = (cmd as any).startTick ?? 0;
 
     if (cmd.trackIndex !== undefined) {
-      // Ensure track exists (auto-create if needed)
+      // NOTE: Track creation is handled by batchExecutor.ensureTracksExist() before batch execution
+      // We only validate that the track exists here, not create it
       const currentTrackCount = project.playlist.tracks.length;
       if (cmd.trackIndex >= currentTrackCount) {
-        // Create tracks up to the needed index
-        for (let i = currentTrackCount; i <= cmd.trackIndex; i++) {
-          store.addPlaylistTrack(`Track ${i + 1}`);
-        }
+        return {
+          success: false,
+          message: `Track ${cmd.trackIndex + 1} does not exist. Only ${currentTrackCount} tracks available.`,
+        };
       }
 
       // Add clip to track

@@ -25,8 +25,79 @@ function formatRelativeTime(timestamp: number): string {
   return `${days}d ago`;
 }
 
+// Model info badge component
+interface ModelInfoBadgeProps {
+  taskType: string;
+  provider: string;
+  model: string;
+}
+
+function ModelInfoBadge({ taskType, provider, model }: ModelInfoBadgeProps) {
+  // Task type styling
+  const getTaskStyle = () => {
+    switch (taskType) {
+      case 'creative':
+        return 'bg-purple-500/20 text-purple-300 border border-purple-500/30';
+      case 'analytical':
+        return 'bg-orange-500/20 text-orange-300 border border-orange-500/30';
+      default: // technical
+        return 'bg-blue-500/20 text-blue-300 border border-blue-500/30';
+    }
+  };
+
+  const getTaskLabel = () => {
+    switch (taskType) {
+      case 'creative':
+        return '✨ Creative';
+      case 'analytical':
+        return '🔍 Analytical';
+      default:
+        return '⚙️ Technical';
+    }
+  };
+
+  // Provider styling
+  const getProviderStyle = () => {
+    switch (provider) {
+      case 'google':
+        return 'bg-green-500/20 text-green-300 border border-green-500/30';
+      case 'anthropic':
+        return 'bg-amber-500/20 text-amber-300 border border-amber-500/30';
+      default: // openai
+        return 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30';
+    }
+  };
+
+  const getProviderLabel = () => {
+    switch (provider) {
+      case 'google':
+        return '🌐 Gemini';
+      case 'anthropic':
+        return '🧠 Claude';
+      default:
+        return '🤖 GPT-4o';
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-1.5 text-2xs">
+      <span className={`px-1.5 py-0.5 rounded-full ${getTaskStyle()}`}>
+        {getTaskLabel()}
+      </span>
+      <span className={`px-1.5 py-0.5 rounded-full ${getProviderStyle()}`}>
+        {getProviderLabel()}
+      </span>
+    </div>
+  );
+}
+
 // Message component with improved styling
-function Message({ message }: { message: ChatMessage }) {
+interface MessageProps {
+  message: ChatMessage;
+  modelInfo?: { taskType: string; provider: string; model: string };
+}
+
+function Message({ message, modelInfo }: MessageProps) {
   const isUser = message.from === 'user';
   const isError = message.status === 'error';
   const isSending = message.status === 'sending';
@@ -34,6 +105,16 @@ function Message({ message }: { message: ChatMessage }) {
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4 animate-fade-in`}>
       <div className={`max-w-[85%] ${isUser ? 'order-2' : 'order-1'}`}>
+        {/* Model info badge for agent messages */}
+        {!isUser && modelInfo && (
+          <div className="mb-1.5 px-1">
+            <ModelInfoBadge
+              taskType={modelInfo.taskType}
+              provider={modelInfo.provider}
+              model={modelInfo.model}
+            />
+          </div>
+        )}
         <div
           className={`px-4 py-3 ${isUser
             ? 'ai-message-user'
@@ -60,24 +141,45 @@ function Message({ message }: { message: ChatMessage }) {
   );
 }
 
-// AI typing indicator component
-function TypingIndicator() {
+// AI typing indicator component with model routing info
+interface TypingIndicatorProps {
+  classifyingText?: string;
+}
+
+function TypingIndicator({ classifyingText }: TypingIndicatorProps) {
   return (
     <div className="flex justify-start mb-4">
-      <div className="ai-message-agent px-4 py-3">
-        <div className="ai-typing-indicator">
-          <span />
-          <span />
-          <span />
+      <div className="max-w-[85%]">
+        {/* Show what's happening */}
+        <div className="mb-1.5 px-1">
+          <span className="text-2xs text-indigo-400 animate-pulse">
+            {classifyingText || '🔄 Analyzing request...'}
+          </span>
+        </div>
+        <div className="ai-message-agent px-4 py-3">
+          <div className="ai-typing-indicator">
+            <span />
+            <span />
+            <span />
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
+// Type for model info from API response
+interface ModelInfo {
+  taskType: string;
+  provider: string;
+  model: string;
+}
+
 export default function ChatPanel() {
   const [inputText, setInputText] = useState('');
   const [textareaRows, setTextareaRows] = useState(1);
+  const [pendingModelInfo, setPendingModelInfo] = useState<ModelInfo | null>(null);
+  const [messageModelInfoMap, setMessageModelInfoMap] = useState<Map<string, ModelInfo>>(new Map());
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -152,6 +254,12 @@ export default function ChatPanel() {
         throw new Error(apiResponse.error || 'Unknown API error');
       }
 
+      // Extract model info from response for UI display
+      const modelInfo: ModelInfo | undefined = apiResponse.data?.modelInfo;
+      if (modelInfo) {
+        setPendingModelInfo(modelInfo);
+      }
+
       // Parse and execute the AI command(s)
       if (apiResponse.data?.commandResult) {
         const backboardResponse = apiResponse.data.commandResult as BackboardResponse;
@@ -173,6 +281,17 @@ export default function ChatPanel() {
             // Add response message based on result
             if (batchResult.success) {
               chat.addMessage('agent', batchResult.message, 'sent');
+
+              // Store model info for this message
+              if (modelInfo) {
+                const newMsgId = messages[messages.length]?.id; // Will be the next message
+                setMessageModelInfoMap(prev => {
+                  const newMap = new Map(prev);
+                  // Store for the latest agent message
+                  newMap.set(`agent_${Date.now()}`, modelInfo);
+                  return newMap;
+                });
+              }
 
               // Track command for undo functionality
               if (batchResult.undoGroupId) {
@@ -298,23 +417,18 @@ export default function ChatPanel() {
           </div>
           <div>
             <h2 className="text-sm font-semibold text-ps-text-primary">AI Assistant</h2>
-            <span className="text-2xs text-indigo-400">Powered by Gemini</span>
+            <span className="text-2xs text-indigo-400">Smart Model Routing</span>
           </div>
         </div>
 
-        {/* Model Selector Pill */}
+        {/* Model info badges */}
         <div className="flex items-center gap-2">
-          <select
-            value={selectedModel}
-            onChange={handleModelChange}
-            disabled={isPending}
-            className="ai-model-pill bg-transparent border-0 text-xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
-            title="Select AI model"
-          >
-            <option value="gemini" className="bg-ps-bg-800">Gemini</option>
-            <option value="fallback" className="bg-ps-bg-800">Fallback</option>
-          </select>
-          
+          <div className="flex items-center gap-1 text-2xs text-ps-text-muted" title="Models are automatically selected based on your request">
+            <span className="px-1.5 py-0.5 rounded bg-green-500/10 text-green-400 border border-green-500/20">Gemini</span>
+            <span className="px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">GPT-4o</span>
+            <span className="px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">Claude</span>
+          </div>
+
           {/* Header action buttons */}
           <button
             onClick={handleUndo}
@@ -362,22 +476,22 @@ export default function ChatPanel() {
             <p className="text-sm text-ps-text-muted text-center mb-6 max-w-[220px]">
               Describe what you want to create and I&apos;ll help build it.
             </p>
-            
+
             {/* Suggestion chips */}
             <div className="flex flex-col gap-2 w-full max-w-[260px]">
-              <button 
+              <button
                 onClick={() => setInputText('Add a kick drum pattern')}
                 className="text-left px-4 py-2.5 rounded-lg bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] text-sm text-ps-text-secondary hover:text-ps-text-primary transition-all"
               >
                 &ldquo;Add a kick drum pattern&rdquo;
               </button>
-              <button 
+              <button
                 onClick={() => setInputText('Set BPM to 128')}
                 className="text-left px-4 py-2.5 rounded-lg bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] text-sm text-ps-text-secondary hover:text-ps-text-primary transition-all"
               >
                 &ldquo;Set BPM to 128&rdquo;
               </button>
-              <button 
+              <button
                 onClick={() => setInputText('Add a bass line')}
                 className="text-left px-4 py-2.5 rounded-lg bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] text-sm text-ps-text-secondary hover:text-ps-text-primary transition-all"
               >
@@ -388,10 +502,29 @@ export default function ChatPanel() {
         ) : (
           // Messages
           <>
-            {messages.map((message) => (
-              <Message key={message.id} message={message} />
-            ))}
-            {isPending && <TypingIndicator />}
+            {messages.map((message, index) => {
+              // For agent messages, try to get the model info
+              // We show the pending model info for the most recent agent message
+              const isLastAgentMessage = message.from === 'agent' &&
+                index === messages.length - 1;
+              const modelInfoForMessage = isLastAgentMessage && pendingModelInfo ? pendingModelInfo : undefined;
+
+              return (
+                <Message
+                  key={message.id}
+                  message={message}
+                  modelInfo={modelInfoForMessage}
+                />
+              );
+            })}
+            {isPending && (
+              <TypingIndicator
+                classifyingText={pendingModelInfo
+                  ? `🎯 ${pendingModelInfo.taskType === 'creative' ? 'Creative' : pendingModelInfo.taskType === 'analytical' ? 'Analytical' : 'Technical'} task → ${pendingModelInfo.provider === 'google' ? 'Gemini' : pendingModelInfo.provider === 'anthropic' ? 'Claude' : 'GPT-4o'}`
+                  : undefined
+                }
+              />
+            )}
             <div ref={messagesEndRef} />
           </>
         )}

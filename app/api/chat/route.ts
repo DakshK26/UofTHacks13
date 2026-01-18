@@ -8,7 +8,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import type { ChatAPIRequest, ChatAPIResponse, BackboardResponse, BackboardBatchResponse } from '@/lib/ai/types';
-import { sendToModel } from '@/lib/ai/backboard';
+import { sendToModel, classifyTask, getModelForTask } from '@/lib/ai/backboard';
 
 // Rate limiting (simple in-memory implementation)
 const requestCounts = new Map<string, { count: number; resetTime: number }>();
@@ -87,10 +87,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Log request
+    // Classify task and get model info BEFORE calling the API
+    const taskType = classifyTask(body.text);
+    const modelConfig = getModelForTask(taskType);
+
+    // Log request with model routing info
     const requestLog = {
       text: body.text.substring(0, 100), // Truncate for logging
       model: body.model,
+      taskType,
+      routedModel: `${modelConfig.provider}/${modelConfig.modelName}`,
       timestamp: new Date().toISOString(),
       hasHistory: !!body.conversationHistory?.length,
       hasContext: !!body.systemPrompt,
@@ -220,6 +226,12 @@ export async function POST(request: NextRequest) {
             confidence: backboardResponse.confidence,
             reasoning: backboardResponse.reasoning,
           },
+          // Include model routing info for UI display
+          modelInfo: {
+            taskType,
+            provider: modelConfig.provider,
+            model: modelConfig.modelName,
+          },
         },
       } as ChatAPIResponse);
     }
@@ -230,6 +242,12 @@ export async function POST(request: NextRequest) {
       data: {
         message: backboardResponse.reasoning || 'Command received',
         commandResult: backboardResponse,
+        // Include model routing info for UI display
+        modelInfo: {
+          taskType,
+          provider: modelConfig.provider,
+          model: modelConfig.modelName,
+        },
       },
     } as ChatAPIResponse);
 

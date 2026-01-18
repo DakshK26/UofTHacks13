@@ -23,6 +23,198 @@ const RETRY_DELAY_MS = 1000;
 // Set to false to try real API first, falls back to mock on error
 const USE_MOCK = false;
 
+// ============================================
+// Model Provider Configuration
+// ============================================
+
+/**
+ * Available model providers through Backboard.io
+ * Challenge requires using at least 2 different providers
+ */
+export type ModelProvider = 'openai' | 'google' | 'anthropic' | 'cohere' | 'xai';
+
+export interface ModelConfig {
+  provider: ModelProvider;
+  modelName: string;
+  description: string;
+}
+
+// Model configurations for different task types
+// Model names are passed to SDK's model_name field (without provider prefix)
+// Provider is passed separately to llm_provider field
+const MODEL_CONFIGS: Record<string, ModelConfig> = {
+  // Creative tasks - Google Gemini (great for creative, musical content)
+  creative: {
+    provider: 'google',
+    modelName: 'gemini-2.5-flash',  // From Backboard's supported models list
+    description: 'Google Gemini 2.5 Flash - Creative & musical tasks',
+  },
+  // Technical/precise tasks - OpenAI GPT-4o (great for structured JSON, precision)
+  technical: {
+    provider: 'openai',
+    modelName: 'gpt-4o',  // Model name only
+    description: 'OpenAI GPT-4o - Technical & precise tasks',
+  },
+  // Analytical tasks - Claude Sonnet 4 (great for explanations, analysis, feedback)
+  analytical: {
+    provider: 'anthropic',
+    modelName: 'claude-sonnet-4-20250514',  // From Backboard's supported models list
+    description: 'Anthropic Claude Sonnet 4 - Analysis & explanations',
+  },
+  // Fallback - faster, cheaper model
+  fallback: {
+    provider: 'openai',
+    modelName: 'gpt-4o-mini',  // Model name only
+    description: 'OpenAI GPT-4o Mini - Fast fallback',
+  },
+};
+
+/**
+ * Task types for intelligent model routing
+ */
+export type TaskType = 'creative' | 'technical' | 'analytical' | 'fallback';
+
+/**
+ * Classify user input to determine the best model for the task
+ * Creative tasks: beat making, melodies, chord progressions, musical suggestions
+ * Technical tasks: BPM changes, transport controls, precise edits, mixer settings
+ * Analytical tasks: explanations, analysis, feedback, music theory questions
+ */
+export function classifyTask(userInput: string): TaskType {
+  const input = userInput.toLowerCase();
+
+  // Analytical task patterns - explanations, analysis, feedback, theory
+  const analyticalPatterns = [
+    /explain/,
+    /what\s+(is|are|does)/,
+    /how\s+(do|does|can|should)/,
+    /why\s+(is|are|does|do)/,
+    /tell\s+me\s+about/,
+    /analyze/,
+    /analyse/,
+    /feedback/,
+    /review/,
+    /critique/,
+    /improve/,
+    /better/,
+    /theory/,
+    /teach/,
+    /learn/,
+    /understand/,
+    /difference\s+between/,
+    /compare/,
+    /help\s+me\s+understand/,
+  ];
+
+  // Creative task patterns - musical creation, suggestions, artistic requests
+  const creativePatterns = [
+    /make\s+(a\s+)?beat/,
+    /create\s+(a\s+)?(beat|melody|chord|bass|pattern)/,
+    /add\s+(a\s+)?(melody|chord|piano|bass|lead|pad)/,
+    /suggest/,
+    /compose/,
+    /generate\s+(a\s+)?(beat|melody|music)/,
+    /write\s+(a\s+)?(melody|chord|bass)/,
+    /hip\s*hop|trap|house|edm|jazz|funk|rock|pop|lofi/,
+    /boom\s*bap|drill|phonk|reggaeton/,
+    /catchy|groovy|chill|energetic|dark|bright/,
+    /improvise|freestyle|jam/,
+  ];
+
+  // Technical task patterns - precise operations, settings, transport, modifications
+  const technicalPatterns = [
+    // BPM/tempo changes (set, change, make it, adjust)
+    /(set|change|adjust|make)\s+(the\s+)?(bpm|tempo)/,
+    /bpm\s+(to|=)\s*\d+/,
+    /tempo\s+(to|=)\s*\d+/,
+    /\d+\s*bpm/,
+    // Transport controls
+    /^(play|stop|pause|record)$/,
+    /^play$/,
+    /^stop$/,
+    // Mixer controls
+    /mute|solo|unmute/,
+    /volume\s+(to|up|down)/,
+    /pan\s+(to|left|right)/,
+    // Editing operations
+    /delete\s+(the\s+)?(pattern|note|clip|track|channel)/,
+    /remove\s+(the\s+)?(pattern|note|clip|track|channel)/,
+    /move\s+(the\s+)?(clip|pattern|note)/,
+    /copy\s+(the\s+)?(clip|pattern|note)/,
+    /duplicate/,
+    /resize/,
+    // Extend/shorten operations
+    /extend\s+(the\s+)?(melody|pattern|clip|beat|track)/,
+    /shorten\s+(the\s+)?(melody|pattern|clip|beat|track)/,
+    /make\s+(it|the\s+\w+)\s+(longer|shorter)/,
+    /\d+\s*bars?\s*(longer|shorter)/,
+    /(longer|shorter)\s*by\s*\d+/,
+    // Loop/position controls
+    /set\s+(the\s+)?(loop|position|start|end)/,
+    /loop\s+(from|to|at)/,
+    // General modifications
+    /change\s+(the\s+)?(volume|pan|pitch|key|scale)/,
+    /adjust\s+(the\s+)?(volume|pan|pitch|key|scale)/,
+    /modify/,
+    /edit/,
+    /update/,
+    // System commands
+    /toggle/,
+    /clear\s+(the\s+)?(pattern|clip|track|all)/,
+    /undo|redo/,
+    /export/,
+    /save|load/,
+    /rename/,
+    // Quantize/snap
+    /quantize/,
+    /snap/,
+  ];
+
+  // Check for analytical patterns first (questions, explanations)
+  for (const pattern of analyticalPatterns) {
+    if (pattern.test(input)) {
+      return 'analytical';
+    }
+  }
+
+  // Check for technical patterns BEFORE creative (technical is more specific)
+  // This prevents "extend the melody" from matching "melody" in creative
+  for (const pattern of technicalPatterns) {
+    if (pattern.test(input)) {
+      return 'technical';
+    }
+  }
+
+  // Check for creative patterns last
+  for (const pattern of creativePatterns) {
+    if (pattern.test(input)) {
+      return 'creative';
+    }
+  }
+
+  // Default to creative for ambiguous requests (more interesting responses)
+  // Short commands default to technical
+  if (input.split(' ').length <= 3) {
+    return 'technical';
+  }
+
+  return 'creative';
+}
+
+/**
+ * Get the model configuration for a task type
+ */
+export function getModelForTask(taskType: TaskType): ModelConfig {
+  const config = MODEL_CONFIGS[taskType];
+  if (config) return config;
+  // Fallback is guaranteed to exist
+  return {
+    provider: 'openai',
+    modelName: 'gpt-4o-mini',
+    description: 'OpenAI GPT-4o Mini - Fast fallback',
+  };
+}
+
 // Backboard client instance (singleton)
 let client: InstanceType<typeof BackboardClient> | null = null;
 
@@ -437,58 +629,7 @@ export async function sendToModel(
     return mockBackboardResponse(text, model, effectiveSystemPrompt);
   }
 
-  // Try REST API first (more reliable than SDK)
-  if (BACKBOARD_API_KEY && BACKBOARD_API_URL) {
-    try {
-      console.log('[Backboard] Trying REST API...');
-      const response = await fetch(BACKBOARD_API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${BACKBOARD_API_KEY}`,
-        },
-        body: JSON.stringify({
-          message: text,
-          system_prompt: effectiveSystemPrompt,
-          model: model === 'gemini' ? 'gpt-4o' : 'gpt-4o-mini',
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log('[Backboard] REST API response:', data);
-
-        // Parse the response content
-        let content = data.content || data.message || data.response || '';
-        if (typeof content === 'string') {
-          content = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-          try {
-            const parsed = JSON.parse(content);
-            if (parsed.actions && Array.isArray(parsed.actions)) {
-              return {
-                action: '__batch__',
-                parameters: { actions: parsed.actions },
-                confidence: parsed.confidence || 0.8,
-                reasoning: parsed.reasoning || 'AI suggestion',
-              };
-            }
-            return {
-              action: parsed.action || 'unknown',
-              parameters: parsed.parameters || {},
-              confidence: parsed.confidence || 0.8,
-              reasoning: parsed.reasoning || 'AI suggestion',
-            };
-          } catch {
-            // If not JSON, fall through to SDK
-          }
-        }
-      }
-    } catch (restError) {
-      console.log('[Backboard] REST API failed, trying SDK...', restError);
-    }
-  }
-
-  // REAL API MODE using Backboard SDK
+  // Use Backboard SDK directly (REST API endpoint doesn't exist)
   if (!BACKBOARD_API_KEY) {
     throw new Error('Backboard API key not configured');
   }
@@ -502,9 +643,15 @@ export async function sendToModel(
       const assistantId = await getAssistant(effectiveSystemPrompt);
       const threadId = await getThread(assistantId);
 
-      // Use OpenAI models (Gemini not available on this Backboard instance)
-      const llmProvider = 'openai';
-      const modelName = model === 'gemini' ? 'gpt-4.1' : 'gpt-4.1-mini';
+      // Intelligent model routing based on task type
+      const taskType = classifyTask(text);
+      const modelConfig = getModelForTask(taskType);
+
+      console.log(`[Backboard] Task classified as: ${taskType}`);
+      console.log(`[Backboard] Using model: ${modelConfig.provider}/${modelConfig.modelName}`);
+
+      const llmProvider = modelConfig.provider;
+      const modelName = modelConfig.modelName;
 
       // Send message using SDK
       const backboard = getClient();
