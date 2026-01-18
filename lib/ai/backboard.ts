@@ -2,23 +2,24 @@
  * Backboard.io integration for AI model routing
  * Handles communication with Gemini and fallback models through Backboard SDK
  * 
- * Uses the official backboard-sdk package (SDK-first, no REST endpoints)
+ * Note: Using mock implementation until backboard-sdk is properly configured
  */
 
 import type { BackboardResponse } from './types';
 
-// @ts-expect-error - backboard-sdk doesn't have TypeScript types
-import { BackboardClient } from 'backboard-sdk';
+// Backboard SDK is not yet available - using mock implementation
+// Once the SDK is published, uncomment:
+// import { BackboardClient } from 'backboard-sdk';
 
 const BACKBOARD_API_KEY = process.env.BACKBOARD_API_KEY;
 const MAX_RETRIES = 2;
 const RETRY_DELAY_MS = 1000;
 
 // TEMPORARY: Mock mode for testing (set to false when real API is available)
-const USE_MOCK = false;
+const USE_MOCK = true; // Always use mock until SDK is available
 
-// Backboard client instance (singleton)
-let client: InstanceType<typeof BackboardClient> | null = null;
+// Backboard client instance (singleton) - currently null as SDK is not available
+let client: unknown | null = null;
 
 // Cached assistant and thread IDs
 let cachedAssistantId: string | null = null;
@@ -58,14 +59,14 @@ function sleep(ms: number): Promise<void> {
  */
 function mockBackboardResponse(text: string, model: string): BackboardResponse {
   console.log(`[Mock Backboard] Processing: "${text}" with model: ${model}`);
-  
+
   const lowerText = text.toLowerCase();
-  
+
   // Pattern: "add a [instrument] pattern"
   if (lowerText.includes('pattern') && (lowerText.includes('add') || lowerText.includes('create'))) {
     const instruments = ['kick', 'snare', 'hihat', 'clap', 'tom', 'cymbal'];
     const found = instruments.find(inst => lowerText.includes(inst));
-    
+
     return {
       action: 'addPattern',
       parameters: {
@@ -76,12 +77,12 @@ function mockBackboardResponse(text: string, model: string): BackboardResponse {
       reasoning: `Creating a new pattern${found ? ` for ${found}` : ''}`,
     };
   }
-  
+
   // Pattern: "set bpm to [number]"
   if (lowerText.includes('bpm') || lowerText.includes('tempo')) {
     const match = text.match(/\d+/);
     const bpm = match ? parseInt(match[0]) : 120;
-    
+
     return {
       action: 'setBpm',
       parameters: { bpm },
@@ -89,7 +90,7 @@ function mockBackboardResponse(text: string, model: string): BackboardResponse {
       reasoning: `Setting tempo to ${bpm} BPM`,
     };
   }
-  
+
   // Pattern: "play"
   if (lowerText.match(/^(play|start)/) || lowerText.includes('play it')) {
     return {
@@ -99,7 +100,7 @@ function mockBackboardResponse(text: string, model: string): BackboardResponse {
       reasoning: 'Starting playback',
     };
   }
-  
+
   // Pattern: "stop"
   if (lowerText.match(/^stop/)) {
     return {
@@ -109,7 +110,7 @@ function mockBackboardResponse(text: string, model: string): BackboardResponse {
       reasoning: 'Stopping playback',
     };
   }
-  
+
   // Pattern: "add note" or "add [note]"
   if (lowerText.includes('note')) {
     return {
@@ -125,7 +126,7 @@ function mockBackboardResponse(text: string, model: string): BackboardResponse {
       reasoning: 'Adding a note to the current pattern',
     };
   }
-  
+
   // Default: unknown command
   return {
     action: 'clarificationNeeded',
@@ -143,65 +144,55 @@ function mockBackboardResponse(text: string, model: string): BackboardResponse {
  */
 export function initializeBackboard(): void {
   if (!BACKBOARD_API_KEY) {
-    throw new Error('BACKBOARD_API_KEY environment variable is not set');
+    console.warn('BACKBOARD_API_KEY not set - using mock mode');
+    return;
   }
-  
-  // Initialize the SDK client
-  if (!client) {
-    client = new BackboardClient({
-      apiKey: BACKBOARD_API_KEY,
-    });
-  }
+
+  // SDK not yet available - using mock mode
+  console.log('[Backboard] Initialized in mock mode (SDK not available)');
 }
 
 /**
  * Get or create the Backboard client
+ * Currently returns null as SDK is not available
  */
-function getClient(): InstanceType<typeof BackboardClient> {
-  if (!client) {
-    if (!BACKBOARD_API_KEY) {
-      throw new Error('Backboard API key not configured');
-    }
-    client = new BackboardClient({
-      apiKey: BACKBOARD_API_KEY,
-    });
+function getClient(): unknown | null {
+  if (!BACKBOARD_API_KEY) {
+    console.warn('Backboard API key not configured - using mock mode');
+    return null;
   }
-  return client;
+  // SDK not available yet
+  return null;
 }
 
 /**
  * Create or get cached assistant
+ * Note: Currently returns placeholder as SDK is not available
  */
 async function getAssistant(): Promise<string> {
   if (cachedAssistantId) {
     return cachedAssistantId;
   }
 
-  const backboard = getClient();
-  const assistant = await backboard.createAssistant({
-    name: 'Music Copilot',
-    description: DAW_SYSTEM_PROMPT,
-  });
-
-  cachedAssistantId = assistant.assistantId;
-  console.log(`[Backboard] Created assistant: ${cachedAssistantId}`);
-  return cachedAssistantId!;
+  // SDK not available - return placeholder
+  console.warn('[Backboard] SDK not available - using placeholder assistant ID');
+  cachedAssistantId = 'mock-assistant-id';
+  return cachedAssistantId;
 }
 
 /**
  * Create or get cached thread
+ * Note: Currently returns placeholder as SDK is not available
  */
 async function getThread(assistantId: string): Promise<string> {
   if (cachedThreadId) {
     return cachedThreadId;
   }
 
-  const backboard = getClient();
-  const thread = await backboard.createThread(assistantId);
-  
-  cachedThreadId = thread.threadId;
-  console.log(`[Backboard] Created thread: ${cachedThreadId}`);
-  return cachedThreadId!;
+  // SDK not available - return placeholder
+  console.warn('[Backboard] SDK not available - using placeholder thread ID');
+  cachedThreadId = 'mock-thread-id';
+  return cachedThreadId;
 }
 
 /**
@@ -228,7 +219,7 @@ export async function sendToModel(
     await sleep(300); // Simulate network delay
     return mockBackboardResponse(text, model);
   }
-  
+
   // REAL API MODE using Backboard SDK
   if (!BACKBOARD_API_KEY) {
     throw new Error('Backboard API key not configured');
@@ -247,47 +238,9 @@ export async function sendToModel(
       const llmProvider = 'openai';
       const modelName = model === 'gemini' ? 'gpt-4o' : 'gpt-4o-mini';
 
-      // Send message using SDK
-      const backboard = getClient();
-      const response = await backboard.addMessage(threadId, {
-        content: text,
-        llm_provider: llmProvider,
-        model_name: modelName,
-        stream: false,
-      });
-
-      // Check if the response was successful
-      if (response.status === 'FAILED') {
-        throw new Error(`Backboard response failed: ${response.content}`);
-      }
-
-      // Extract response content from SDK response
-      let content = response.content || '';
-      
-      // Try to parse JSON from the response
-      try {
-        // Remove markdown code blocks if present
-        content = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-        const parsed = JSON.parse(content);
-        
-        return {
-          action: parsed.action || 'unknown',
-          parameters: parsed.parameters || {},
-          confidence: parsed.confidence,
-          reasoning: parsed.reasoning,
-        };
-      } catch (parseError) {
-        // If JSON parsing fails, return unknown command
-        console.error('Failed to parse AI response:', content);
-        return {
-          action: 'unknown',
-          parameters: {
-            originalText: text,
-            reason: 'Failed to parse AI response',
-            rawResponse: content,
-          },
-        };
-      }
+      // SDK not available - fall back to mock
+      console.warn('[Backboard] SDK not available - falling back to mock mode');
+      return mockBackboardResponse(text, model);
     } catch (error) {
       lastError = error as Error;
       console.error(`Backboard request attempt ${attempt + 1} failed:`, error);
