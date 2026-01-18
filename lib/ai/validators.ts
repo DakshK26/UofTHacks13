@@ -185,3 +185,78 @@ export function validateNonEmptyString(
   }
   return { valid: true };
 }
+
+// TrackEffects validation (based on TrackEffects interface)
+export function validateTrackEffectKey(
+  key: string
+): { valid: boolean; error?: string } {
+  const validKeys = ['volume', 'pan', 'eqLow', 'eqMid', 'eqHigh', 'compThreshold', 'compRatio', 'reverbWet'];
+  if (!validKeys.includes(key)) {
+    return {
+      valid: false,
+      error: `Invalid effect key. Must be one of: ${validKeys.join(', ')}`
+    };
+  }
+  return { valid: true };
+}
+
+export function validateTrackEffectValue(
+  key: string,
+  value: number
+): { valid: boolean; error?: string } {
+  if (typeof value !== 'number' || isNaN(value)) {
+    return { valid: false, error: `Effect value for '${key}' must be a number` };
+  }
+
+  // Validate based on effect key
+  switch (key) {
+    case 'volume':
+      // 0-2 (1 = unity gain, 2 = 200%)
+      if (value < 0 || value > 2) {
+        return { valid: false, error: 'Volume must be between 0 and 2 (0% to 200%)' };
+      }
+      break;
+
+    case 'pan':
+      // -1 to 1 (left to right)
+      if (value < -1 || value > 1) {
+        return { valid: false, error: 'Pan must be between -1 (left) and 1 (right)' };
+      }
+      break;
+
+    case 'eqLow':
+    case 'eqMid':
+    case 'eqHigh':
+      // -12 to +12 dB
+      if (value < -12 || value > 12) {
+        return { valid: false, error: `${key} must be between -12 and +12 dB` };
+      }
+      break;
+
+    case 'compThreshold':
+      // -60 to 0 dB
+      if (value < -60 || value > 0) {
+        return { valid: false, error: 'Compression threshold must be between -60 and 0 dB' };
+      }
+      break;
+
+    case 'compRatio':
+      // 1 to 20
+      if (value < 1 || value > 20) {
+        return { valid: false, error: 'Compression ratio must be between 1 and 20' };
+      }
+      break;
+
+    case 'reverbWet':
+      // 0 to 1 (dry to wet)
+      if (value < 0 || value > 1) {
+        return { valid: false, error: 'Reverb wet must be between 0 (dry) and 1 (wet)' };
+      }
+      break;
+
+    default:
+      return { valid: false, error: `Unknown effect key: ${key}` };
+  }
+
+  return { valid: true };
+}

@@ -336,37 +336,6 @@ export interface UnknownCommand extends BaseCommand {
   reason?: string;
 }
 
-// Union type of all commands
-export type AICommand =
-  | AddPatternCommand
-  | DeletePatternCommand
-  | AddNoteCommand
-  | UpdateNoteCommand
-  | DeleteNoteCommand
-  | PlayCommand
-  | StopCommand
-  | PauseCommand
-  | SetBPMCommand
-  | SetPositionCommand
-  | ToggleMetronomeCommand
-  | AddChannelCommand
-  | UpdateChannelCommand
-  | DeleteChannelCommand
-  | SetVolumeCommand
-  | SetPanCommand
-  | ToggleMuteCommand
-  | ToggleSoloCommand
-  | AddClipCommand
-  | MoveClipCommand
-  | ResizeClipCommand
-  | DeleteClipCommand
-  | SetLoopRegionCommand
-  | AddEffectCommand
-  | UpdateEffectCommand
-  | DeleteEffectCommand
-  | ClarificationNeededCommand
-  | UnknownCommand;
-
 // Response from Backboard
 export interface BackboardResponse {
   action: string;

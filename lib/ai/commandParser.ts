@@ -222,6 +222,37 @@ export function parseAIResponse(response: BackboardResponse): AICommand {
       };
     }
 
+    // TrackEffects commands (simple inline mixer)
+    if (action === 'setTrackEffect') {
+      return {
+        action: 'setTrackEffect',
+        trackId: String(parameters.trackId || parameters.track),
+        key: String(parameters.key || parameters.effectKey || parameters.param),
+        value: Number(parameters.value),
+      };
+    }
+
+    if (action === 'resetTrackEffects') {
+      return {
+        action: 'resetTrackEffects',
+        trackId: String(parameters.trackId || parameters.track),
+      };
+    }
+
+    if (action === 'applyTrackEffects') {
+      return {
+        action: 'applyTrackEffects',
+        trackId: String(parameters.trackId || parameters.track),
+      };
+    }
+
+    if (action === 'setMasterVolume') {
+      return {
+        action: 'setMasterVolume',
+        volume: Number(parameters.volume),
+      };
+    }
+
     // Special commands
     if (action === 'clarificationNeeded') {
       return {
