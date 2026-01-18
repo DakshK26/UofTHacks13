@@ -27,13 +27,13 @@ export function useAudioRecorder() {
                 // Try to enumerate devices
                 const devices = await navigator.mediaDevices.enumerateDevices();
                 const audioInputs = devices.filter(d => d.kind === 'audioinput');
-                
+
                 // Check if we have labels (meaning permission was granted)
                 if (audioInputs.length > 0 && audioInputs[0]?.label) {
                     setPermissionState('granted');
                     setAvailableDevices(audioInputs);
                     setIsInitialized(true);
-                    
+
                     // Set up level monitoring
                     try {
                         mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -42,13 +42,13 @@ export function useAudioRecorder() {
                         analyser = audioContext.createAnalyser();
                         analyser.fftSize = 256;
                         source.connect(analyser);
-                        
+
                         const dataArray = new Uint8Array(analyser.frequencyBinCount);
-                        
+
                         levelCheckInterval = setInterval(() => {
                             if (!analyser) return;
                             analyser.getByteFrequencyData(dataArray);
-                            
+
                             // Calculate RMS level
                             let sum = 0;
                             for (let i = 0; i < dataArray.length; i++) {
@@ -65,7 +65,7 @@ export function useAudioRecorder() {
                     setPermissionState('prompt');
                     setAvailableDevices(audioInputs);
                 }
-                
+
                 setError(null);
             } catch (err) {
                 console.error('[useAudioRecorder] Failed to initialize:', err);
@@ -82,7 +82,7 @@ export function useAudioRecorder() {
             const audioInputs = devices.filter(d => d.kind === 'audioinput');
             setAvailableDevices(audioInputs);
         };
-        
+
         navigator.mediaDevices.addEventListener('devicechange', handleDeviceChange);
 
         return () => {
@@ -115,13 +115,13 @@ export function useAudioRecorder() {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             stream.getTracks().forEach(track => track.stop());
             setPermissionState('granted');
-            
+
             // Re-enumerate devices
             const devices = await navigator.mediaDevices.enumerateDevices();
             const audioInputs = devices.filter(d => d.kind === 'audioinput');
             setAvailableDevices(audioInputs);
             setIsInitialized(true);
-            
+
             return true;
         } catch (err) {
             console.error('[useAudioRecorder] Permission denied:', err);
