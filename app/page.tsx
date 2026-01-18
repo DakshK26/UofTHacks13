@@ -22,6 +22,199 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen background-transparent text-white overflow-x-hidden relative">
+      {/* Abstract Concentric Arcs - Top Right Corner */}
+      <div className="absolute top-0 right-0 pointer-events-none hidden lg:block overflow-hidden z-10" style={{ width: '100%', height: '100vh' }}>
+        <svg width="100%" height="100%" viewBox="0 0 1600 1200" fill="none" preserveAspectRatio="xMaxYMin slice">
+          <defs>
+            {/* Radial Gradient from corner */}
+            <radialGradient id="arcGradient" cx="100%" cy="0%" r="100%" fx="100%" fy="0%">
+              <stop offset="0%" stopColor="#ff6b6b" stopOpacity="0.8" />
+              <stop offset="40%" stopColor="#ff7a7a" stopOpacity="0.5" />
+              <stop offset="70%" stopColor="#a04137" stopOpacity="0.25" />
+              <stop offset="100%" stopColor="#6b2d28" stopOpacity="0" />
+            </radialGradient>
+
+            {/* Glow filter */}
+            <filter id="arcGlow" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="4" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+
+          {/* Concentric Arcs radiating from top-right corner */}
+          {[
+            { id: 1, r: 50, opacity: 0.9, delay: 0, pulse: 2.5, strokeWidth: 3 },
+            { id: 2, r: 100, opacity: 0.85, delay: 0.04, pulse: 2.7, strokeWidth: 2.8 },
+            { id: 3, r: 150, opacity: 0.8, delay: 0.08, pulse: 2.9, strokeWidth: 2.6 },
+            { id: 4, r: 200, opacity: 0.75, delay: 0.12, pulse: 3.1, strokeWidth: 2.4 },
+            { id: 5, r: 250, opacity: 0.7, delay: 0.16, pulse: 3.3, strokeWidth: 2.2 },
+            { id: 6, r: 300, opacity: 0.65, delay: 0.2, pulse: 3.5, strokeWidth: 2 },
+            { id: 7, r: 350, opacity: 0.6, delay: 0.24, pulse: 3.7, strokeWidth: 1.8 },
+            { id: 8, r: 400, opacity: 0.55, delay: 0.28, pulse: 3.9, strokeWidth: 1.6 },
+            { id: 9, r: 450, opacity: 0.5, delay: 0.32, pulse: 4.1, strokeWidth: 1.5 },
+            { id: 10, r: 500, opacity: 0.45, delay: 0.36, pulse: 4.3, strokeWidth: 1.4 },
+            { id: 11, r: 550, opacity: 0.4, delay: 0.4, pulse: 4.5, strokeWidth: 1.3 },
+            { id: 12, r: 600, opacity: 0.35, delay: 0.44, pulse: 4.7, strokeWidth: 1.2 },
+            { id: 13, r: 650, opacity: 0.3, delay: 0.48, pulse: 4.9, strokeWidth: 1.1 },
+            { id: 14, r: 700, opacity: 0.26, delay: 0.52, pulse: 5.1, strokeWidth: 1 },
+            { id: 15, r: 750, opacity: 0.22, delay: 0.56, pulse: 5.3, strokeWidth: 0.9 },
+            { id: 16, r: 800, opacity: 0.18, delay: 0.6, pulse: 5.5, strokeWidth: 0.85 },
+            { id: 17, r: 850, opacity: 0.15, delay: 0.64, pulse: 5.7, strokeWidth: 0.8 },
+            { id: 18, r: 900, opacity: 0.12, delay: 0.68, pulse: 5.9, strokeWidth: 0.75 },
+            { id: 19, r: 950, opacity: 0.1, delay: 0.72, pulse: 6.1, strokeWidth: 0.7 },
+            { id: 20, r: 1000, opacity: 0.08, delay: 0.76, pulse: 6.3, strokeWidth: 0.65 },
+            { id: 21, r: 1050, opacity: 0.06, delay: 0.8, pulse: 6.5, strokeWidth: 0.6 },
+            { id: 22, r: 1100, opacity: 0.05, delay: 0.84, pulse: 6.7, strokeWidth: 0.55 },
+            { id: 23, r: 1150, opacity: 0.04, delay: 0.88, pulse: 6.9, strokeWidth: 0.5 },
+            { id: 24, r: 1200, opacity: 0.03, delay: 0.92, pulse: 7.1, strokeWidth: 0.45 },
+            { id: 25, r: 1250, opacity: 0.025, delay: 0.96, pulse: 7.3, strokeWidth: 0.4 },
+            { id: 26, r: 1300, opacity: 0.02, delay: 1, pulse: 7.5, strokeWidth: 0.35 },
+            { id: 27, r: 1350, opacity: 0.015, delay: 1.04, pulse: 7.7, strokeWidth: 0.3 },
+            { id: 28, r: 1400, opacity: 0.01, delay: 1.08, pulse: 7.9, strokeWidth: 0.25 }
+          ].map((arc) => (
+            <motion.path
+              key={arc.id}
+              d={`M 1600 ${arc.r} A ${arc.r} ${arc.r} 0 0 0 ${1600 - arc.r} 0`}
+              stroke="url(#arcGradient)"
+              strokeWidth={arc.strokeWidth}
+              strokeLinecap="round"
+              fill="none"
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={{
+                pathLength: 1,
+                opacity: arc.opacity,
+                scale: [1, 1.02, 1]
+              }}
+              transition={{
+                pathLength: { duration: 2, delay: arc.delay, ease: "easeOut" },
+                opacity: { duration: 1.5, delay: arc.delay },
+                scale: {
+                  duration: arc.pulse,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: arc.delay
+                }
+              }}
+            />
+          ))}
+
+          {/* Glowing Node Points along the arcs - smaller circles */}
+          {[
+            { cx: 1600, cy: 50, r: 2, delay: 0 },
+            { cx: 1600, cy: 100, r: 1.9, delay: 0.04 },
+            { cx: 1600, cy: 150, r: 1.8, delay: 0.08 },
+            { cx: 1600, cy: 200, r: 1.7, delay: 0.12 },
+            { cx: 1600, cy: 250, r: 1.6, delay: 0.16 },
+            { cx: 1600, cy: 300, r: 1.5, delay: 0.2 },
+            { cx: 1600, cy: 350, r: 1.4, delay: 0.24 },
+            { cx: 1600, cy: 400, r: 1.3, delay: 0.28 },
+            { cx: 1600, cy: 450, r: 1.2, delay: 0.32 },
+            { cx: 1600, cy: 500, r: 1.1, delay: 0.36 },
+            { cx: 1600, cy: 550, r: 1, delay: 0.4 },
+            { cx: 1600, cy: 600, r: 0.95, delay: 0.44 },
+            { cx: 1600, cy: 650, r: 0.9, delay: 0.48 },
+            { cx: 1600, cy: 700, r: 0.85, delay: 0.52 },
+            { cx: 1600, cy: 750, r: 0.8, delay: 0.56 },
+            { cx: 1600, cy: 800, r: 0.75, delay: 0.6 },
+            { cx: 1600, cy: 850, r: 0.7, delay: 0.64 },
+            { cx: 1600, cy: 900, r: 0.65, delay: 0.68 },
+            { cx: 1600, cy: 950, r: 0.6, delay: 0.72 },
+            { cx: 1600, cy: 1000, r: 0.55, delay: 0.76 },
+            { cx: 1600, cy: 1050, r: 0.5, delay: 0.8 },
+            { cx: 1600, cy: 1100, r: 0.45, delay: 0.84 },
+            { cx: 1600, cy: 1150, r: 0.4, delay: 0.88 },
+            { cx: 1600, cy: 1200, r: 0.35, delay: 0.92 }
+          ].map((node, i) => (
+            <motion.circle
+              key={`node-${i}`}
+              cx={node.cx}
+              cy={node.cy}
+              r={node.r}
+              fill="#ff6b6b"
+              filter="url(#arcGlow)"
+              animate={{
+                scale: [1, 1.3, 1],
+                opacity: [1, 0.6, 1]
+              }}
+              transition={{
+                duration: 3 + i * 0.1,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: node.delay
+              }}
+            />
+          ))}
+
+          {/* Accent dots at arc endpoints - smaller */}
+          {[
+            { cx: 1150, cy: 0, r: 1.5, delay: 0.03 },
+            { cx: 1100, cy: 0, r: 1.4, delay: 0.08 },
+            { cx: 1050, cy: 0, r: 1.3, delay: 0.13 },
+            { cx: 1000, cy: 0, r: 1.2, delay: 0.18 },
+            { cx: 950, cy: 0, r: 1.1, delay: 0.23 },
+            { cx: 900, cy: 0, r: 1, delay: 0.28 },
+            { cx: 850, cy: 0, r: 0.9, delay: 0.33 },
+            { cx: 800, cy: 0, r: 0.85, delay: 0.38 },
+            { cx: 750, cy: 0, r: 0.8, delay: 0.43 },
+            { cx: 700, cy: 0, r: 0.75, delay: 0.48 },
+            { cx: 650, cy: 0, r: 0.7, delay: 0.53 },
+            { cx: 600, cy: 0, r: 0.65, delay: 0.58 },
+            { cx: 550, cy: 0, r: 0.6, delay: 0.63 },
+            { cx: 500, cy: 0, r: 0.55, delay: 0.68 },
+            { cx: 450, cy: 0, r: 0.5, delay: 0.73 },
+            { cx: 400, cy: 0, r: 0.45, delay: 0.78 },
+            { cx: 350, cy: 0, r: 0.4, delay: 0.83 },
+            { cx: 300, cy: 0, r: 0.35, delay: 0.88 },
+            { cx: 250, cy: 0, r: 0.3, delay: 0.93 },
+            { cx: 200, cy: 0, r: 0.25, delay: 0.98 },
+            { cx: 150, cy: 0, r: 0.2, delay: 1.03 },
+            { cx: 100, cy: 0, r: 0.15, delay: 1.08 }
+          ].map((dot, i) => (
+            <motion.circle
+              key={`dot-${i}`}
+              cx={dot.cx}
+              cy={dot.cy}
+              r={dot.r}
+              fill="#ff6b6b"
+              opacity="0.5"
+              animate={{
+                opacity: [0.3, 0.7, 0.3],
+                scale: [1, 1.2, 1]
+              }}
+              transition={{
+                duration: 2.5 + i * 0.1,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: dot.delay
+              }}
+            />
+          ))}
+
+          {/* Subtle pulsing ring effect */}
+          <motion.circle
+            cx="500"
+            cy="0"
+            r="60"
+            stroke="#ff6b6b"
+            strokeWidth="1"
+            fill="none"
+            opacity="0.2"
+            animate={{
+              r: [60, 400],
+              opacity: [0.3, 0]
+            }}
+            transition={{
+              duration: 6,
+              repeat: Infinity,
+              ease: "easeOut"
+            }}
+          />
+        </svg>
+      </div>
+
       {/* Navigation */}
       <motion.nav
         initial={{ opacity: 0, y: -10 }}
@@ -54,7 +247,6 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* Right side: Auth buttons */}
         <div className="flex items-center gap-3">
           <button
             onClick={() => router.push('/login')}
@@ -72,7 +264,7 @@ export default function LandingPage() {
       </motion.nav>
 
       {/* Hero Section */}
-      <section className="px-8 lg:px-16 pt-10 pb-6 max-w-[1400px] mx-auto">
+      <section className="px-8 lg:px-16 pt-10 pb-6 max-w-[1400px] mx-auto relative">
         {/* Hero Heading */}
         <motion.div
           initial="initial"
@@ -138,7 +330,7 @@ export default function LandingPage() {
           variants={staggerContainer}
           className="flex items-center justify-between mb-3 px-2"
         >
-          {['Triage', 'RCA', 'Fix', 'Test'].map((step) => (
+          {['Record', 'Analyze', 'Generate', 'Deploy'].map((step) => (
             <motion.div
               key={step}
               variants={fadeInUp}
@@ -194,83 +386,20 @@ export default function LandingPage() {
           <div className="absolute inset-0 bg-black/10 pointer-events-none" />
 
           {/* Content */}
-          <div className="p-8 min-h-[350px] relative">
+          <div className="p-12 lg:p-24 min-h-[500px] lg:min-h-[800px] relative flex items-center justify-center">
             {/* Testing Card */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[500px]"
+              className="w-full max-w-[1100px] relative z-10"
             >
-              <div className="bg-white rounded-lg shadow-2xl overflow-hidden">
-                {/* Header */}
-                <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full bg-[#4ade80] flex items-center justify-center">
-                    <svg width="8" height="8" viewBox="0 0 24 24" fill="none">
-                      <path d="M5 12L10 17L19 8" stroke="white" strokeWidth="3" />
-                    </svg>
-                  </div>
-                  <span className="text-[13px] text-black font-medium">Testing</span>
-                  <span className="text-[12px] text-gray-400">› Simulations complete</span>
-                </div>
-
-                {/* Test items */}
-                <div className="p-3 space-y-2">
-                  {[
-                    'Happy path: Authenticated user can update billing information',
-                    'Edge case: large file upload works',
-                    'Edge case: AUD invoices are properly converted to USD',
-                    'Security: Viewer permissions fail when trying to edit billing information'
-                  ].map((item, i) => (
-                    <div
-                      key={i}
-                      className="flex items-center justify-between px-3 py-2 bg-gray-50 rounded-md"
-                    >
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-[#4ade80]" />
-                        <span className="text-[11px] text-gray-700 line-through">
-                          {item}
-                        </span>
-                      </div>
-                      <span className="text-[10px] text-[#4ade80] font-medium">
-                        Pass
-                      </span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Footer */}
-                <div className="px-4 py-3 border-t border-gray-100 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                      <path
-                        d="M12 2L2 7L12 12L22 7L12 2Z"
-                        stroke="#666"
-                        strokeWidth="2"
-                      />
-                    </svg>
-                    <span className="text-[12px] text-gray-700 font-medium">
-                      Billing Permission Layer Fix
-                    </span>
-                    <span className="text-[11px] text-gray-400">(2 files)</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-[11px] text-green-600">+ 198</span>
-                    <span className="text-[11px] text-red-500">- 42</span>
-                    <button className="text-[11px] bg-gray-900 text-white px-3 py-1 rounded-md flex items-center gap-1">
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
-                        <path
-                          d="M12 2L2 7L12 12L22 7L12 2Z"
-                          stroke="white"
-                          strokeWidth="2"
-                        />
-                      </svg>
-                      Merge
-                    </button>
-                  </div>
-                </div>
-              </div>
+              <img
+                src="/demo_img.png"
+                alt="Pulse Studio Demo"
+                className="w-full h-auto rounded-xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] border border-white/20 transform scale-110"
+              />
             </motion.div>
           </div>
         </div>
@@ -285,9 +414,9 @@ export default function LandingPage() {
         transition={{ duration: 0.8 }}
         className="px-8 lg:px-16 py-20 max-w-[1400px] mx-auto"
       >
-        <h2 className="text-[28px] mb-2">An always-on AI support engineer</h2>
+        <h2 className="text-[28px] mb-2">An always-on AI music agent</h2>
         <p className="whitespace-nowrap text-[#BAB8B8] text-[14px] mb-10 max-w-[500px]">
-          An AI support engineer that can triage, RCA, and fix customer problems autonomously.
+          An AI music agent that can listen, analyze, and refine your track autonomously.
         </p>
 
         <div className="grid md:grid-cols-2 gap-12">
@@ -330,11 +459,28 @@ export default function LandingPage() {
           {/* Right: Features */}
           <div className="space-y-8 pt-4">
             {[
-              { icon: '↗', title: 'Scale customers without scaling headcount', desc: 'Autonomously triages with full context, deflects L1/L2, and handles L3 in minutes—24/7.' },
-              { icon: '⊡', title: 'Operate with governance', desc: 'Approvals, diffs, and an audit trail keep fixes safe and compliant.' },
-              { icon: '✦', title: 'Evolving agents', desc: 'Constantly learns your flow and the institutional knowledge embedded in your process and software.' },
-              { icon: '⇆', title: 'Perfect handoffs for faster resolution', desc: "Delivers full context with proposed fixes and RCA so developers don't have to context switch and can ship fixes faster." },
+              {
+                icon: '↗',
+                title: 'Scale creativity without scaling effort',
+                desc: 'Autonomously analyzes musical context, resolves common mix and arrangement issues, and handles complex decisions in minutes.'
+              },
+              {
+                icon: '⊡',
+                title: 'Create with intent and control',
+                desc: 'Approvals, diffs, and a full change history keep every musical decision reversible and aligned with your creative vision.'
+              },
+              {
+                icon: '✦',
+                title: 'Evolving musical agents',
+                desc: 'Continuously learns your taste, references, and workflow across projects to make better musical decisions over time.'
+              },
+              {
+                icon: '⇆',
+                title: 'Perfect handoffs for uninterrupted flow',
+                desc: 'Delivers full musical context with proposed changes and rationale so you never lose momentum or creative intent.'
+              }
             ].map((item, i) => (
+
               <div key={i} className="flex gap-4">
                 <span className="text-[16px] text-gray-400">{item.icon}</span>
                 <div>
@@ -343,7 +489,7 @@ export default function LandingPage() {
                 </div>
               </div>
             ))}
-            <button className="text-[13px] text-white px-5 py-2.5 rounded-full border border-[#444] hover:border-[#666] transition-colors mt-4">
+            <button className="text-[13px] text-white px-5 py-2.5 rounded-xl border border-[#444] hover:border-[#666] transition-colors mt-4">
               Our product
             </button>
           </div>
@@ -356,11 +502,11 @@ export default function LandingPage() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 0.8 }}
-        className="px-8 lg:px-16 py-20 max-w-[1400px] mx-auto mb-20"
+        className="px-8 lg:px-16 py-20 max-w-[1400px] mx-auto mb-4"
       >
-        <h2 className="text-[28px] mb-2">Autonomous QA on every commit</h2>
+        <h2 className="text-[28px] mb-2">Autonomous validation on every change</h2>
         <p className="whitespace-nowrap text-[#BAB8B8] text-[14px] mb-10 max-w-[600px]">
-          Continuous, code-aware simulations that run on each change and validate customer workflows before merge.
+          Continuous, music-aware simulations run on each edit to verify groove, balance, and structure before render.
         </p>
 
         <div className="grid md:grid-cols-2 gap-12">
@@ -399,11 +545,28 @@ export default function LandingPage() {
           {/* Right: Features */}
           <div className="space-y-8 pt-4">
             {[
-              { icon: '☐', title: 'Generate test scenarios automatically', desc: 'AI builds scenarios from PRDs, diffs, and tickets.' },
-              { icon: '⟲', title: 'Prevent regressions', desc: 'Simulations proactively verify the most impactful areas of your software.' },
-              { icon: '◎', title: 'Ship with confidence', desc: 'Pass/fail gates and RCA on failures keep master stable.' },
-              { icon: '→', title: 'Plug into CI & PR Workflows', desc: 'Insights and approvals appear in code review and pipelines.' },
+              {
+                icon: '□',
+                title: 'Auto-generate musical tests',
+                desc: 'Creates validation scenarios from your latest musical changes.'
+              },
+              {
+                icon: '⟲',
+                title: 'Catch regressions early',
+                desc: 'Verifies groove, balance, and dynamics on every edit.'
+              },
+              {
+                icon: '◎',
+                title: 'Render with confidence',
+                desc: 'Clear pass/fail signals before export.'
+              },
+              {
+                icon: '→',
+                title: 'Native session integration',
+                desc: 'Results appear directly in your timeline.'
+              }
             ].map((item, i) => (
+
               <div key={i} className="flex gap-4">
                 <span className="text-[16px] text-gray-400">{item.icon}</span>
                 <div>
@@ -419,7 +582,24 @@ export default function LandingPage() {
         </div>
       </motion.section>
 
-      {/* Safe and Secure Section */}
+      {/* Memory Quote Section */}
+      <motion.section
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 1.5 }}
+        className="px-8 lg:px-16 py-16 max-w-[1400px] mx-auto text-center mb-24"
+      >
+        <p
+          className="text-[24px] md:text-[35px] text-white leading-relaxed tracking-[0.02em]"
+          style={{ fontFamily: "'Instrument Serif', Georgia, serif" }}
+        >
+          Pulse builds a <span className="font-semibold">memory</span> of every creative decision,<br />
+          so your music <span className="font-semibold">evolves instead of repeating itself</span>.
+        </p>
+      </motion.section>
+
+      {/* Trust & Privacy Section */}
       <div
         className="w-full relative border-y border-[#1a1a1a] mb-20"
         style={{
@@ -435,36 +615,37 @@ export default function LandingPage() {
           transition={{ duration: 0.8 }}
           className="px-8 lg:px-16 py-24 max-w-[1400px] mx-auto"
         >
-          <h2 className="text-[28px] mb-2">Safe and secure</h2>
-          <p className="text-[#BAB8B8] text-[14px] mb-12 max-w-[500px]">
-            Enterprise-grade security with privacy and control by default.
+          <h2 className="text-[28px] mb-2">Private and creator-first</h2>
+          <p className="text-[#BAB8B8] text-[14px] mb-12 max-w-[520px]">
+            Built for artists and studios who demand control, privacy, and trust by default.
           </p>
 
           <div className="grid md:grid-cols-2 gap-16 items-start">
-            {/* Left: Security Demo/Illustration */}
+            {/* Left: Visual / Trust State */}
             <div className="relative rounded-2xl overflow-hidden aspect-[4/3] bg-[#0d0d0d] border border-[#222] group">
               <div
                 className="absolute inset-0 opacity-40 grayscale group-hover:grayscale-0 transition-all duration-1000"
                 style={{
-                  backgroundImage: 'url("https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&q=80")',
+                  backgroundImage:
+                    'url("https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&q=80")',
                   backgroundSize: 'cover',
                   backgroundPosition: 'center'
                 }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
 
-              {/* Security Badge */}
+              {/* Status Badge */}
               <div className="absolute bottom-10 left-10 flex items-center gap-3 px-4 py-2.5 bg-black/60 backdrop-blur-md rounded-full border border-white/10">
                 <div className="w-4 h-4 rounded-full border border-green-400/50 flex items-center justify-center">
                   <div className="w-1.5 h-1.5 rounded-full bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.5)]" />
                 </div>
                 <span className="text-[12px] text-white/90 font-medium tracking-tight">
-                  All systems nominal • <span className="text-white">SOC-2 Type II</span>
+                  Session protected • <span className="text-white">Local & private</span>
                 </span>
               </div>
             </div>
 
-            {/* Right: Security Features */}
+            {/* Right: Trust Features */}
             <div className="space-y-10 py-2">
               {[
                 {
@@ -474,8 +655,8 @@ export default function LandingPage() {
                       <path d="M8 12L11 15L16 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   ),
-                  title: 'Supervision',
-                  desc: 'Set approval workflows to ensure the right people approve as Pulse works.'
+                  title: 'Human-in-the-loop control',
+                  desc: 'Set approval rules so agents only act when and how you want them to.'
                 },
                 {
                   icon: (
@@ -484,8 +665,8 @@ export default function LandingPage() {
                       <circle cx="12" cy="8" r="3" stroke="currentColor" strokeWidth="1.5" />
                     </svg>
                   ),
-                  title: 'Compliance',
-                  desc: 'SOC-2 Type II & HIPAA audited.'
+                  title: 'Professional-grade reliability',
+                  desc: 'Designed for real sessions, real deadlines, and production-grade workflows.'
                 },
                 {
                   icon: (
@@ -496,7 +677,7 @@ export default function LandingPage() {
                     </svg>
                   ),
                   title: 'Private by design',
-                  desc: 'We never train models on your data — you own all output.'
+                  desc: 'Your music never trains public models. You own every output, always.'
                 },
                 {
                   icon: (
@@ -507,41 +688,34 @@ export default function LandingPage() {
                       <path d="M15 12H20" stroke="currentColor" strokeWidth="1.5" />
                     </svg>
                   ),
-                  title: 'Hybrid & enterprise',
-                  desc: 'BYOK/BYOC options for data residency in your VPC and control over inference providers/LLMs.'
+                  title: 'Local, cloud, or hybrid',
+                  desc: 'Run agents locally, in the cloud, or both — fully under your control.'
                 }
               ].map((item, i) => (
                 <div key={i} className="flex gap-5 group">
-                  <div className="mt-1 transition-transform group-hover:scale-110 duration-300">{item.icon}</div>
+                  <div className="mt-1 transition-transform group-hover:scale-110 duration-300">
+                    {item.icon}
+                  </div>
                   <div>
-                    <h4 className="text-[14px] font-medium mb-1.5 text-white/90">{item.title}</h4>
-                    <p className="text-[13px] text-[#BAB8B8] leading-relaxed group-hover:text-[#BAB8B8] transition-colors">{item.desc}</p>
+                    <h4 className="text-[14px] font-medium mb-1.5 text-white/90">
+                      {item.title}
+                    </h4>
+                    <p className="text-[13px] text-[#BAB8B8] leading-relaxed">
+                      {item.desc}
+                    </p>
                   </div>
                 </div>
               ))}
+
               <div className="pt-4">
                 <button className="text-[14px] text-black bg-white px-6 py-2.5 rounded-xl font-medium hover:bg-[#ff7a7a] hover:text-white transition-all">
-                  Security overview
+                  Privacy & trust overview
                 </button>
               </div>
             </div>
           </div>
         </motion.section>
       </div>
-
-      {/* Memory Quote Section */}
-      <motion.section
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 1.5 }}
-        className="px-8 lg:px-16 py-16 max-w-[1400px] mx-auto text-center"
-      >
-        <p className="text-[24px] md:text-[35px] text-white leading-relaxed tracking-[0.02em]" style={{ fontFamily: "'Instrument Serif', Georgia, serif" }}>
-          Pulse builds a <span className="font-semibold">memory</span> of every problem,<br />
-          so that the same mistake is <span className="font-semibold">never made twice</span>.
-        </p>
-      </motion.section>
 
       {/* About Section */}
       <motion.section
@@ -583,33 +757,6 @@ export default function LandingPage() {
         viewport={{ once: true }}
         className="px-8 lg:px-16 py-16 border-t border-[#1a1a1a] max-w-[1400px] mx-auto"
       >
-        <div className="grid md:grid-cols-4 gap-12 mb-16">
-          <div>
-            <h5 className="text-[12px] font-semibold tracking-wide text-[#666] mb-4">PLATFORM</h5>
-            <div className="space-y-3">
-              <a href="#" className="block text-[13px] text-[#888] hover:text-white transition-colors">Agentic debugging</a>
-              <a href="#" className="block text-[13px] text-[#888] hover:text-white transition-colors">Code simulations</a>
-              <a href="#" className="block text-[13px] text-[#888] hover:text-white transition-colors">Enterprise</a>
-            </div>
-          </div>
-          <div>
-            <h5 className="text-[12px] font-semibold tracking-wide text-[#666] mb-4">COMPANY</h5>
-            <div className="space-y-3">
-              <a href="#" className="block text-[13px] text-[#888] hover:text-white transition-colors">Resources</a>
-              <a href="#" className="block text-[#888] text-[13px] hover:text-white transition-colors">About</a>
-              <a href="#" className="block text-[#888] text-[13px] hover:text-white transition-colors">Careers</a>
-            </div>
-          </div>
-          <div>
-            <h5 className="text-[12px] font-semibold tracking-wide text-[#666] mb-4">LEGAL</h5>
-            <div className="space-y-3">
-              <a href="#" className="block text-[13px] text-[#888] hover:text-white transition-colors">Terms of service</a>
-              <a href="#" className="block text-[13px] text-[#888] hover:text-white transition-colors">Privacy policy</a>
-              <a href="#" className="block text-[13px] text-[#888] hover:text-white transition-colors">Acceptable use policy</a>
-              <a href="#" className="block text-[13px] text-[#888] hover:text-white transition-colors">Report AI concerns</a>
-            </div>
-          </div>
-        </div>
 
         <div className="flex items-center justify-between pt-8 border-t border-[#1a1a1a]">
           <div className="flex items-center gap-2">
