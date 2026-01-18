@@ -308,11 +308,11 @@ export async function sendToModel(
     try {
       // Get or create assistant and thread with dynamic context
       const assistantId = await getAssistant(effectiveSystemPrompt);
-      const _threadId = await getThread(assistantId);
+      const threadId = await getThread(assistantId);
 
       // Use OpenAI models (Gemini not available on this Backboard instance)
-      const _llmProvider = 'openai';
-      const _modelName = model === 'gemini' ? 'gpt-4o' : 'gpt-4o-mini';
+      const llmProvider = 'openai';
+      const modelName = model === 'gemini' ? 'gpt-4o' : 'gpt-4o-mini';
 
       // Send message using SDK
       const backboard = getClient();
