@@ -1362,31 +1362,31 @@ function ClipBlock({
 
       {/* Left resize handle */}
       <div
-        className="absolute left-0 top-0 bottom-0 w-1 cursor-ew-resize hover:bg-white/50 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+        className="resize-handle resize-handle-left absolute left-0 top-0 bottom-0 w-1.5 cursor-ew-resize opacity-0 group-hover:opacity-60 hover:!opacity-100 hover:!bg-white/50 transition-opacity z-10"
         onMouseDown={(e) => handleResizeMouseDown(e, 'left')}
         onClick={(e) => e.stopPropagation()}
       />
 
       {/* Right resize handle */}
       <div
-        className="absolute right-0 top-0 bottom-0 w-1 cursor-ew-resize hover:bg-white/50 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+        className="resize-handle resize-handle-right absolute right-0 top-0 bottom-0 w-1.5 cursor-ew-resize opacity-0 group-hover:opacity-60 hover:!opacity-100 hover:!bg-white/50 transition-opacity z-10"
         onMouseDown={(e) => handleResizeMouseDown(e, 'right')}
         onClick={(e) => e.stopPropagation()}
       />
 
-      {/* Clip header */}
-      <div className="px-1 py-0.5 bg-black/20 text-2xs text-white truncate pointer-events-none">
+      {/* Clip header with gradient */}
+      <div className="px-2 py-1 bg-gradient-to-b from-black/30 to-transparent text-xs font-medium text-white truncate pointer-events-none">
         {name}
       </div>
 
       {/* Mini preview */}
-      <div className="flex-1 p-1 overflow-hidden pointer-events-none">
+      <div className="flex-1 px-1.5 pb-1 overflow-hidden pointer-events-none">
         {clip.type === 'pattern' && pattern && (
-          <div className="h-full flex items-end gap-px">
+          <div className="h-full flex items-end gap-0.5">
             {pattern.stepEvents.slice(0, 16).map((_, i) => (
               <div
                 key={i}
-                className="flex-1 bg-white/30 rounded-sm"
+                className="flex-1 bg-white/40 rounded-sm"
                 style={{ height: `${30 + Math.random() * 40}%` }}
               />
             ))}
@@ -1398,7 +1398,7 @@ function ClipBlock({
             {Array.from({ length: Math.floor(displayWidth / 4) }).map((_, i) => (
               <div
                 key={i}
-                className="flex-shrink-0 bg-white/40 rounded-sm"
+                className="flex-shrink-0 bg-white/50 rounded-sm"
                 style={{
                   width: '2px',
                   height: `${30 + (Math.sin(i * 0.5) * 0.5 + 0.5) * 40}%`,

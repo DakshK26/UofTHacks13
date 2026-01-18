@@ -25,34 +25,34 @@ function formatRelativeTime(timestamp: number): string {
   return `${days}d ago`;
 }
 
-// Message component
+// Message component with improved styling
 function Message({ message }: { message: ChatMessage }) {
   const isUser = message.from === 'user';
   const isError = message.status === 'error';
   const isSending = message.status === 'sending';
 
   return (
-    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-3`}>
-      <div className={`max-w-[80%] ${isUser ? 'order-2' : 'order-1'}`}>
+    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4 animate-fade-in`}>
+      <div className={`max-w-[85%] ${isUser ? 'order-2' : 'order-1'}`}>
         <div
-          className={`rounded-lg px-4 py-2 ${isUser
-            ? 'bg-blue-600 text-white'
+          className={`px-4 py-3 ${isUser
+            ? 'ai-message-user'
             : isError
-              ? 'bg-red-900 text-red-100'
-              : 'bg-gray-800 text-gray-100'
+              ? 'bg-red-900/50 border border-red-500/30 text-red-100 rounded-2xl'
+              : 'ai-message-agent'
             } ${isSending ? 'opacity-60' : ''}`}
         >
-          <p className="text-sm whitespace-pre-wrap break-words">{message.text}</p>
+          <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">{message.text}</p>
         </div>
-        <div className="flex items-center gap-2 mt-1 px-1">
-          <span className="text-xs text-gray-500">
+        <div className={`flex items-center gap-2 mt-1.5 px-2 ${isUser ? 'justify-end' : 'justify-start'}`}>
+          <span className="text-xs text-ps-text-dim">
             {formatRelativeTime(message.timestamp)}
           </span>
           {isSending && (
-            <span className="text-xs text-gray-500">Sending...</span>
+            <span className="text-xs text-ps-text-muted">Sending...</span>
           )}
           {isError && (
-            <span className="text-xs text-red-500">Failed</span>
+            <span className="text-xs text-red-400">Failed</span>
           )}
         </div>
       </div>
@@ -60,18 +60,15 @@ function Message({ message }: { message: ChatMessage }) {
   );
 }
 
-// Loading spinner component
-function LoadingSpinner() {
+// AI typing indicator component
+function TypingIndicator() {
   return (
-    <div className="flex justify-start mb-3">
-      <div className="bg-gray-800 rounded-lg px-4 py-2">
-        <div className="flex items-center gap-2">
-          <div className="flex gap-1">
-            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-          </div>
-          <span className="text-xs text-gray-400">Thinking...</span>
+    <div className="flex justify-start mb-4">
+      <div className="ai-message-agent px-4 py-3">
+        <div className="ai-typing-indicator">
+          <span />
+          <span />
+          <span />
         </div>
       </div>
     </div>
@@ -281,44 +278,14 @@ export default function ChatPanel() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-gray-900 text-white">
+    <div className="flex flex-col h-full ai-panel text-white relative">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-800">
-        <div className="flex items-center gap-2">
-          <svg
-            className="w-5 h-5 text-blue-500"
-            fill="none"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-          </svg>
-          <h2 className="text-sm font-semibold">AI Assistant</h2>
-        </div>
-
-        {/* Model Selector */}
-        <select
-          value={selectedModel}
-          onChange={handleModelChange}
-          disabled={isPending}
-          className="text-xs bg-gray-800 border border-gray-700 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-          title="Select AI model"
-        >
-          <option value="gemini">Gemini</option>
-          <option value="fallback">Fallback</option>
-        </select>
-      </div>
-
-      {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto px-4 py-4">
-        {messages.length === 0 ? (
-          // Empty state
-          <div className="flex flex-col items-center justify-center h-full text-gray-500">
+      <div className="ai-panel-header flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-3">
+          {/* AI Icon with glow */}
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-glow-ai">
             <svg
-              className="w-16 h-16 mb-4 text-gray-700"
+              className="w-4 h-4 text-white"
               fill="none"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -326,12 +293,97 @@ export default function ChatPanel() {
               viewBox="0 0 24 24"
               stroke="currentColor"
             >
-              <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
             </svg>
-            <p className="text-sm text-center mb-2">Ask me to help with your track...</p>
-            <p className="text-xs text-gray-600 text-center max-w-[200px]">
-              Try: &quot;Add a kick drum pattern&quot; or &quot;Set BPM to 128&quot;
+          </div>
+          <div>
+            <h2 className="text-sm font-semibold text-ps-text-primary">AI Assistant</h2>
+            <span className="text-2xs text-indigo-400">Powered by Gemini</span>
+          </div>
+        </div>
+
+        {/* Model Selector Pill */}
+        <div className="flex items-center gap-2">
+          <select
+            value={selectedModel}
+            onChange={handleModelChange}
+            disabled={isPending}
+            className="ai-model-pill bg-transparent border-0 text-xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
+            title="Select AI model"
+          >
+            <option value="gemini" className="bg-ps-bg-800">Gemini</option>
+            <option value="fallback" className="bg-ps-bg-800">Fallback</option>
+          </select>
+          
+          {/* Header action buttons */}
+          <button
+            onClick={handleUndo}
+            disabled={!canUndoAIAction() || isPending}
+            className="w-7 h-7 flex items-center justify-center rounded-md text-ps-text-muted hover:text-ps-text-primary hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+            title="Undo last AI action"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+            </svg>
+          </button>
+          <button
+            onClick={handleClearChat}
+            disabled={messages.length === 0 || isPending}
+            className="w-7 h-7 flex items-center justify-center rounded-md text-ps-text-muted hover:text-ps-text-primary hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+            title="Clear chat history"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {/* Messages Area */}
+      <div className="flex-1 overflow-y-auto px-4 py-5">
+        {messages.length === 0 ? (
+          // Empty state - demo-ready with suggestions
+          <div className="flex flex-col items-center justify-center h-full">
+            {/* Animated AI icon */}
+            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-600/20 border border-indigo-500/20 flex items-center justify-center mb-6 animate-pulse-glow">
+              <svg
+                className="w-10 h-10 text-indigo-400"
+                fill="none"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="1.5"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              </svg>
+            </div>
+            <h3 className="text-base font-semibold text-ps-text-primary mb-2">How can I help?</h3>
+            <p className="text-sm text-ps-text-muted text-center mb-6 max-w-[220px]">
+              Describe what you want to create and I&apos;ll help build it.
             </p>
+            
+            {/* Suggestion chips */}
+            <div className="flex flex-col gap-2 w-full max-w-[260px]">
+              <button 
+                onClick={() => setInputText('Add a kick drum pattern')}
+                className="text-left px-4 py-2.5 rounded-lg bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] text-sm text-ps-text-secondary hover:text-ps-text-primary transition-all"
+              >
+                &ldquo;Add a kick drum pattern&rdquo;
+              </button>
+              <button 
+                onClick={() => setInputText('Set BPM to 128')}
+                className="text-left px-4 py-2.5 rounded-lg bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] text-sm text-ps-text-secondary hover:text-ps-text-primary transition-all"
+              >
+                &ldquo;Set BPM to 128&rdquo;
+              </button>
+              <button 
+                onClick={() => setInputText('Add a bass line')}
+                className="text-left px-4 py-2.5 rounded-lg bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] text-sm text-ps-text-secondary hover:text-ps-text-primary transition-all"
+              >
+                &ldquo;Add a bass line&rdquo;
+              </button>
+            </div>
           </div>
         ) : (
           // Messages
@@ -339,50 +391,30 @@ export default function ChatPanel() {
             {messages.map((message) => (
               <Message key={message.id} message={message} />
             ))}
-            {isPending && <LoadingSpinner />}
+            {isPending && <TypingIndicator />}
             <div ref={messagesEndRef} />
           </>
         )}
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex items-center gap-2 px-4 py-2 border-t border-gray-800">
-        <button
-          onClick={handleUndo}
-          disabled={!canUndoAIAction() || isPending}
-          className="text-xs px-3 py-1.5 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed rounded transition-colors"
-          title="Undo last AI action"
-        >
-          Undo
-        </button>
-        <button
-          onClick={handleClearChat}
-          disabled={messages.length === 0 || isPending}
-          className="text-xs px-3 py-1.5 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed rounded transition-colors"
-          title="Clear chat history"
-        >
-          Clear
-        </button>
-      </div>
-
       {/* Input Area */}
-      <div className="px-4 py-3 border-t border-gray-800">
-        <div className="flex gap-2">
+      <div className="ai-input-container px-4 py-4 shrink-0">
+        <div className="flex gap-3">
           <textarea
             ref={textareaRef}
             value={inputText}
             onChange={handleTextareaChange}
             onKeyDown={handleKeyDown}
-            placeholder="Ask me anything about your project..."
+            placeholder="Describe what you want to do..."
             disabled={isPending}
             rows={textareaRows}
-            className="flex-1 bg-gray-800 text-white text-sm rounded-lg px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 placeholder-gray-500"
+            className="ai-input flex-1 text-white text-sm px-4 py-3 resize-none focus:outline-none disabled:opacity-50 placeholder-ps-text-dim"
             style={{ maxHeight: '120px' }}
           />
           <button
             onClick={handleSend}
             disabled={!inputText.trim() || isPending}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-colors"
+            className="ai-send-btn w-11 h-11 flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed text-white shrink-0"
             title="Send message (Enter)"
           >
             <svg
@@ -398,9 +430,12 @@ export default function ChatPanel() {
             </svg>
           </button>
         </div>
-        <p className="text-xs text-gray-600 mt-2">
-          Press <kbd className="px-1 py-0.5 bg-gray-800 rounded text-gray-400">Enter</kbd> to send,
-          <kbd className="px-1 py-0.5 bg-gray-800 rounded text-gray-400 ml-1">Shift+Enter</kbd> for new line
+        <p className="text-2xs text-ps-text-dim mt-2.5 flex items-center gap-2">
+          <kbd className="px-1.5 py-0.5 bg-white/5 rounded text-ps-text-muted font-mono text-2xs">↵</kbd>
+          <span>to send</span>
+          <span className="text-ps-text-dim/50">•</span>
+          <kbd className="px-1.5 py-0.5 bg-white/5 rounded text-ps-text-muted font-mono text-2xs">⇧↵</kbd>
+          <span>new line</span>
         </p>
       </div>
     </div>

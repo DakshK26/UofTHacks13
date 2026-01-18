@@ -87,21 +87,24 @@ export default function ChannelRack() {
   };
 
   return (
-    <div className="h-full flex flex-col" data-panel="channelRack">
+    <div className="h-full flex flex-col bg-ps-bg-850" data-panel="channelRack">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-ps-bg-600 shrink-0">
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-ps-text-secondary">Pattern:</span>
-          <span className="text-xs font-medium text-ps-accent-primary">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-ps-bg-600 shrink-0 bg-ps-bg-800">
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-ps-text-muted uppercase tracking-wide">Pattern:</span>
+          <span className="text-sm font-semibold text-ps-accent-primary">
             {selectedPattern?.name ?? 'None'}
           </span>
         </div>
         <div className="relative">
           <button
-            className="btn btn-ghost text-xs py-1 px-2"
+            className="text-xs py-2 px-3 rounded-md bg-ps-accent-primary/10 border border-ps-accent-primary/20 text-ps-accent-primary hover:bg-ps-accent-primary/15 transition-all flex items-center gap-2"
             onClick={() => setShowAddMenu(!showAddMenu)}
           >
-            + Add Channel
+            <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+            </svg>
+            Add Channel
           </button>
           {showAddMenu && (
             <AddInstrumentMenu
@@ -296,8 +299,11 @@ function ChannelRow({
         onClose={() => setShowSettings(false)}
       />
       <div
-        className={`flex items-center border-b border-ps-bg-700 ${isSelected ? 'bg-ps-bg-700' : 'hover:bg-ps-bg-700/50'
+        className={`flex items-center border-b border-ps-bg-700 transition-all ${isSelected 
+          ? 'bg-ps-bg-700 shadow-sm' 
+          : 'hover:bg-ps-bg-800'
           }`}
+        style={{ minHeight: '52px' }}
         onClick={onSelect}
         onDrop={handleDrop}
         onDragOver={handleDragOver}
@@ -305,38 +311,42 @@ function ChannelRow({
         onDragOverCapture={handleDragOver}
       >
         {/* Channel Info */}
-        <div className="w-32 shrink-0 p-2 flex items-center gap-2">
+        <div className="w-36 shrink-0 p-3 flex items-center gap-3">
           {/* Color */}
           <div
-            className="w-2 h-8 rounded-sm shrink-0"
+            className={`w-1.5 h-10 rounded-full shrink-0 transition-all ${isSelected ? 'shadow-glow-orange' : ''}`}
             style={{ backgroundColor: channel.color }}
           />
 
           {/* Name */}
           <div className="flex-1 min-w-0">
-            <div className="text-xs font-medium truncate">{channel.name}</div>
-            <div className="text-2xs text-ps-text-muted capitalize">
+            <div className={`text-sm truncate transition-all ${isSelected ? 'font-semibold text-ps-text-primary' : 'text-ps-text-secondary'}`}>
+              {channel.name}
+            </div>
+            <div className="text-2xs text-ps-text-dim capitalize">
               {channel.type}
             </div>
           </div>
         </div>
 
         {/* Controls */}
-        <div className="flex items-center gap-1 px-2 shrink-0">
+        <div className="flex items-center gap-1.5 px-2 shrink-0">
           <button
-            className="btn btn-ghost btn-icon w-5 h-5"
+            className="btn btn-ghost btn-icon w-6 h-6 hover:bg-white/10"
             onClick={(e) => {
               e.stopPropagation();
               setShowSettings(true);
             }}
             title="Instrument Settings"
           >
-            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+            <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
             </svg>
           </button>
           <button
-            className={`btn btn-icon w-5 h-5 text-2xs ${channel.mute ? 'bg-ps-accent-red text-white' : 'btn-ghost'
+            className={`btn btn-icon w-6 h-6 text-2xs font-bold transition-all ${channel.mute 
+              ? 'bg-ps-accent-red text-white shadow-sm' 
+              : 'btn-ghost hover:bg-white/10'
               }`}
             onClick={(e) => {
               e.stopPropagation();
@@ -347,7 +357,9 @@ function ChannelRow({
             M
           </button>
           <button
-            className={`btn btn-icon w-5 h-5 text-2xs ${channel.solo ? 'bg-ps-accent-tertiary text-black' : 'btn-ghost'
+            className={`btn btn-icon w-6 h-6 text-2xs font-bold transition-all ${channel.solo 
+              ? 'bg-ps-accent-tertiary text-black shadow-sm' 
+              : 'btn-ghost hover:bg-white/10'
               }`}
             onClick={(e) => {
               e.stopPropagation();
@@ -360,7 +372,7 @@ function ChannelRow({
         </div>
 
         {/* Step Sequencer Grid */}
-        <div className="flex-1 flex items-center gap-0.5 px-2 overflow-x-auto py-2">
+        <div className="flex-1 flex items-center gap-0.5 px-3 overflow-x-auto py-2">
           {Array.from({ length: totalSteps }).map((_, step) => {
             const isActive = activeSteps.has(step);
             const isDownbeat = step % stepsPerBeat === 0;
@@ -370,9 +382,9 @@ function ChannelRow({
               <button
                 key={step}
                 className={`
-                w-5 h-5 rounded-sm shrink-0 transition-all step
-                ${isActive ? 'step-active' : ''}
-                ${isBar ? 'ml-1' : ''}
+                w-6 h-6 rounded shrink-0 transition-all step hover:scale-110
+                ${isActive ? 'step-active shadow-sm' : ''}
+                ${isBar ? 'ml-2' : ''}
               `}
                 style={{
                   backgroundColor: isActive

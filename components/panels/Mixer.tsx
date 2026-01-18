@@ -74,57 +74,90 @@ export default function Mixer() {
   );
 
   return (
-    <div className="h-full flex flex-col bg-ps-bg-800 text-ps-text-primary" data-panel="mixer">
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-ps-bg-600 shrink-0">
-        <span className="text-sm font-medium">🎛️ Mixer</span>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-ps-text-muted">Master</span>
-          <input
-            type="range"
-            min="0"
-            max="1.5"
-            step="0.01"
-            value={masterVolume}
-            onChange={(e) => setMasterVolume(parseFloat(e.target.value))}
-            className="w-20 h-2 accent-ps-accent-primary"
-          />
-          <span className="text-xs text-ps-text-muted w-10 text-right">
+    <div className="h-full flex flex-col bg-[#0a0a0a] text-white" data-panel="mixer">
+      {/* Header - Sleek dark header with pink accent */}
+      <div className="flex items-center justify-between px-5 py-4 border-b border-[#1a1a1a] shrink-0 bg-gradient-to-r from-[#0d0d0d] to-[#111]">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#ff6b6b] to-[#ff8585] flex items-center justify-center shadow-lg shadow-[#ff6b6b]/20">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+              <rect x="4" y="4" width="4" height="16" rx="1" />
+              <rect x="10" y="8" width="4" height="12" rx="1" />
+              <rect x="16" y="2" width="4" height="18" rx="1" />
+            </svg>
+          </div>
+          <div>
+            <span className="text-sm font-semibold text-white tracking-tight">Mixer</span>
+            <p className="text-[10px] text-[#666] uppercase tracking-wider">Audio Processing</p>
+          </div>
+        </div>
+        
+        {/* Master Volume - Premium look */}
+        <div className="flex items-center gap-4 bg-[#111] rounded-xl px-4 py-2.5 border border-[#222]">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-[#ff6b6b] animate-pulse" />
+            <span className="text-[10px] text-[#888] uppercase tracking-widest font-medium">Master</span>
+          </div>
+          <div className="relative">
+            <input
+              type="range"
+              min="0"
+              max="1.5"
+              step="0.01"
+              value={masterVolume}
+              onChange={(e) => setMasterVolume(parseFloat(e.target.value))}
+              className="mixer-slider w-28 h-1.5"
+            />
+          </div>
+          <span className="text-xs font-mono text-white w-12 text-right tabular-nums">
             {Math.round(masterVolume * 100)}%
           </span>
         </div>
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="flex-1 overflow-y-auto p-5 bg-gradient-to-b from-[#0a0a0a] to-[#080808]">
         {tracks.length === 0 ? (
-          <div className="text-center text-ps-text-muted py-8">
-            <p>No tracks in playlist.</p>
-            <p className="text-xs mt-2">Add a track to use the mixer.</p>
+          <div className="flex flex-col items-center justify-center h-full text-center py-16">
+            <div className="w-20 h-20 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-[#1a1a1a] to-[#111] border border-[#222] flex items-center justify-center">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#444" strokeWidth="1.5">
+                <rect x="4" y="4" width="4" height="16" rx="1" />
+                <rect x="10" y="8" width="4" height="12" rx="1" />
+                <rect x="16" y="2" width="4" height="18" rx="1" />
+              </svg>
+            </div>
+            <p className="text-sm text-[#888] font-medium">No tracks in playlist</p>
+            <p className="text-xs mt-1.5 text-[#555]">Add a track to start mixing</p>
           </div>
         ) : (
-          <div className="space-y-6">
-            {/* Track Selector */}
-            <div>
-              <label className="block text-xs text-ps-text-muted mb-1">Track</label>
-              <select
-                className="w-full bg-ps-bg-700 border border-ps-bg-600 rounded px-3 py-2 text-sm"
-                value={selectedTrack?.id ?? ''}
-                onChange={(e) => setSelectedTrackId(e.target.value as UUID)}
-              >
-                {tracks.map((track) => (
-                  <option key={track.id} value={track.id}>
-                    {track.name}
-                  </option>
-                ))}
-              </select>
+          <div className="space-y-5">
+            {/* Track Selector - Card style */}
+            <div className="mixer-card p-4">
+              <label className="block text-[10px] text-[#666] mb-2.5 uppercase tracking-widest font-semibold">Select Track</label>
+              <div className="relative">
+                <select
+                  className="w-full bg-[#0d0d0d] border border-[#222] rounded-lg px-4 py-3 text-sm font-medium text-white focus:border-[#ff6b6b] focus:outline-none focus:ring-1 focus:ring-[#ff6b6b]/30 transition-all appearance-none cursor-pointer hover:border-[#333]"
+                  value={selectedTrack?.id ?? ''}
+                  onChange={(e) => setSelectedTrackId(e.target.value as UUID)}
+                >
+                  {tracks.map((track) => (
+                    <option key={track.id} value={track.id}>
+                      {track.name}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
+                    <path d="M6 9L12 15L18 9" />
+                  </svg>
+                </div>
+              </div>
             </div>
 
             {selectedTrack && (
               <>
-                {/* Volume & Pan */}
+                {/* Volume & Pan - Side by side cards */}
                 <div className="grid grid-cols-2 gap-4">
-                  <SliderControl
+                  <MixerSlider
                     label="Volume"
                     value={effects.volume}
                     min={0}
@@ -133,8 +166,9 @@ export default function Mixer() {
                     defaultValue={1}
                     formatValue={(v) => `${Math.round(v * 100)}%`}
                     onChange={(v) => handleEffectChange('volume', v)}
+                    icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" /><path d="M15.54 8.46a5 5 0 0 1 0 7.07" /></svg>}
                   />
-                  <SliderControl
+                  <MixerSlider
                     label="Pan"
                     value={effects.pan}
                     min={-1}
@@ -143,14 +177,22 @@ export default function Mixer() {
                     defaultValue={0}
                     formatValue={(v) => v === 0 ? 'C' : v < 0 ? `L${Math.round(Math.abs(v) * 100)}` : `R${Math.round(v * 100)}`}
                     onChange={(v) => handleEffectChange('pan', v)}
+                    icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M8 12h8" /><path d="M12 8v8" /></svg>}
                   />
                 </div>
 
-                {/* EQ Section */}
-                <div>
-                  <div className="text-xs text-ps-text-muted mb-2 uppercase tracking-wide">Equalizer</div>
+                {/* EQ Section - Premium card design */}
+                <div className="mixer-card p-4">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-6 h-6 rounded-md bg-[#1a1a1a] flex items-center justify-center">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ff6b6b" strokeWidth="2">
+                        <path d="M2 12h4l3-9 4 18 3-9h6" />
+                      </svg>
+                    </div>
+                    <span className="text-[10px] text-[#888] uppercase tracking-widest font-semibold">Equalizer</span>
+                  </div>
                   <div className="grid grid-cols-3 gap-4">
-                    <SliderControl
+                    <MixerSlider
                       label="Low"
                       value={effects.eqLow}
                       min={-12}
@@ -159,8 +201,9 @@ export default function Mixer() {
                       defaultValue={0}
                       formatValue={(v) => `${v > 0 ? '+' : ''}${v.toFixed(1)} dB`}
                       onChange={(v) => handleEffectChange('eqLow', v)}
+                      compact
                     />
-                    <SliderControl
+                    <MixerSlider
                       label="Mid"
                       value={effects.eqMid}
                       min={-12}
@@ -169,8 +212,9 @@ export default function Mixer() {
                       defaultValue={0}
                       formatValue={(v) => `${v > 0 ? '+' : ''}${v.toFixed(1)} dB`}
                       onChange={(v) => handleEffectChange('eqMid', v)}
+                      compact
                     />
-                    <SliderControl
+                    <MixerSlider
                       label="High"
                       value={effects.eqHigh}
                       min={-12}
@@ -179,15 +223,24 @@ export default function Mixer() {
                       defaultValue={0}
                       formatValue={(v) => `${v > 0 ? '+' : ''}${v.toFixed(1)} dB`}
                       onChange={(v) => handleEffectChange('eqHigh', v)}
+                      compact
                     />
                   </div>
                 </div>
 
                 {/* Compression Section */}
-                <div>
-                  <div className="text-xs text-ps-text-muted mb-2 uppercase tracking-wide">Compression</div>
+                <div className="mixer-card p-4">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-6 h-6 rounded-md bg-[#1a1a1a] flex items-center justify-center">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ff6b6b" strokeWidth="2">
+                        <path d="M4 14h6v6H4zM14 4h6v6h-6z" />
+                        <path d="M7 14V4h10v10H7" />
+                      </svg>
+                    </div>
+                    <span className="text-[10px] text-[#888] uppercase tracking-widest font-semibold">Compression</span>
+                  </div>
                   <div className="grid grid-cols-2 gap-4">
-                    <SliderControl
+                    <MixerSlider
                       label="Threshold"
                       value={effects.compThreshold}
                       min={-60}
@@ -197,7 +250,7 @@ export default function Mixer() {
                       formatValue={(v) => `${v} dB`}
                       onChange={(v) => handleEffectChange('compThreshold', v)}
                     />
-                    <SliderControl
+                    <MixerSlider
                       label="Ratio"
                       value={effects.compRatio}
                       min={1}
@@ -211,9 +264,18 @@ export default function Mixer() {
                 </div>
 
                 {/* Reverb Section */}
-                <div>
-                  <div className="text-xs text-ps-text-muted mb-2 uppercase tracking-wide">Reverb</div>
-                  <SliderControl
+                <div className="mixer-card p-4">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-6 h-6 rounded-md bg-[#1a1a1a] flex items-center justify-center">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ff6b6b" strokeWidth="2">
+                        <circle cx="12" cy="12" r="3" />
+                        <path d="M12 5v2M12 17v2M5 12h2M17 12h2" />
+                        <circle cx="12" cy="12" r="9" strokeDasharray="2 2" />
+                      </svg>
+                    </div>
+                    <span className="text-[10px] text-[#888] uppercase tracking-widest font-semibold">Reverb</span>
+                  </div>
+                  <MixerSlider
                     label="Amount"
                     value={effects.reverbWet}
                     min={0}
@@ -222,29 +284,38 @@ export default function Mixer() {
                     defaultValue={0}
                     formatValue={(v) => `${Math.round(v * 100)}%`}
                     onChange={(v) => handleEffectChange('reverbWet', v)}
+                    icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3" /><path d="M12 5v2M12 17v2M5 12h2M17 12h2" /></svg>}
                   />
                 </div>
 
-                {/* Action Buttons */}
-                <div className="flex gap-3 pt-4 border-t border-ps-bg-600">
+                {/* Action Buttons - Premium style */}
+                <div className="flex gap-3 pt-4">
                   <button
-                    className="flex-1 py-2 px-4 text-sm rounded bg-ps-bg-600 hover:bg-ps-bg-500 text-ps-text-secondary"
+                    className="flex-1 py-3.5 px-4 text-sm rounded-xl bg-[#111] hover:bg-[#1a1a1a] text-[#888] border border-[#222] hover:border-[#333] transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed font-medium"
                     onClick={handleReset}
                     disabled={!hasChanges && !needsApply}
                   >
                     Reset to Default
                   </button>
                   <button
-                    className={`flex-1 py-2 px-4 text-sm rounded font-medium ${isProcessing
-                      ? 'bg-ps-bg-600 text-ps-text-muted cursor-wait'
+                    className={`flex-1 py-3.5 px-4 text-sm rounded-xl font-semibold transition-all duration-200 ${isProcessing
+                      ? 'bg-[#1a1a1a] text-[#555] cursor-wait'
                       : (hasChanges || needsApply)
-                        ? 'bg-ps-accent-primary text-white hover:bg-ps-accent-primary/80'
-                        : 'bg-ps-bg-600 text-ps-text-muted cursor-not-allowed'
+                        ? 'bg-gradient-to-r from-[#ff6b6b] to-[#ff8585] text-white shadow-lg shadow-[#ff6b6b]/25 hover:shadow-[#ff6b6b]/40 hover:scale-[1.02]'
+                        : 'bg-[#1a1a1a] text-[#555] cursor-not-allowed'
                       }`}
                     onClick={handleApplyEffects}
                     disabled={isProcessing || (!hasChanges && !needsApply)}
                   >
-                    {isProcessing ? '⏳ Processing...' : '✨ Apply Effects'}
+                    {isProcessing ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
+                        Processing...
+                      </span>
+                    ) : 'Apply Effects'}
                   </button>
                 </div>
               </>
@@ -257,9 +328,9 @@ export default function Mixer() {
 }
 
 /**
- * Reusable slider control component
+ * Premium mixer slider component
  */
-interface SliderControlProps {
+interface MixerSliderProps {
   label: string;
   value: number;
   min: number;
@@ -268,9 +339,11 @@ interface SliderControlProps {
   defaultValue: number;
   formatValue: (value: number) => string;
   onChange: (value: number) => void;
+  icon?: React.ReactNode;
+  compact?: boolean;
 }
 
-function SliderControl({
+function MixerSlider({
   label,
   value,
   min,
@@ -279,28 +352,44 @@ function SliderControl({
   defaultValue,
   formatValue,
   onChange,
-}: SliderControlProps) {
+  icon,
+  compact = false,
+}: MixerSliderProps) {
   const isDefault = value === defaultValue;
+  const percentage = ((value - min) / (max - min)) * 100;
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-1">
-        <label className="text-xs text-ps-text-muted">{label}</label>
-        <span className={`text-xs ${isDefault ? 'text-ps-text-muted' : 'text-ps-accent-primary'}`}>
+    <div className={`group ${compact ? '' : 'mixer-card p-3'}`}>
+      <div className="flex justify-between items-center mb-2.5">
+        <div className="flex items-center gap-2">
+          {icon && <span className="text-[#666] group-hover:text-[#ff6b6b] transition-colors">{icon}</span>}
+          <label className="text-[10px] text-[#888] font-semibold uppercase tracking-wider">{label}</label>
+        </div>
+        <span className={`text-xs font-mono tabular-nums transition-colors ${isDefault ? 'text-[#555]' : 'text-[#ff6b6b]'}`}>
           {formatValue(value)}
         </span>
       </div>
-      <input
-        type="range"
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        onChange={(e) => onChange(parseFloat(e.target.value))}
-        className="w-full h-2 accent-ps-accent-primary cursor-pointer"
-        onDoubleClick={() => onChange(defaultValue)}
-        title="Double-click to reset"
-      />
+      <div className="relative h-2 group/slider">
+        {/* Track background */}
+        <div className="absolute inset-0 rounded-full bg-[#1a1a1a] overflow-hidden">
+          {/* Fill */}
+          <div 
+            className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-[#ff6b6b]/60 to-[#ff6b6b] transition-all duration-100"
+            style={{ width: `${percentage}%` }}
+          />
+        </div>
+        <input
+          type="range"
+          min={min}
+          max={max}
+          step={step}
+          value={value}
+          onChange={(e) => onChange(parseFloat(e.target.value))}
+          className="mixer-slider absolute inset-0 w-full cursor-pointer"
+          onDoubleClick={() => onChange(defaultValue)}
+          title="Double-click to reset"
+        />
+      </div>
     </div>
   );
 }

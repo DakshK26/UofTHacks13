@@ -230,22 +230,23 @@ export default function Browser() {
   );
 
   return (
-    <div className="h-full flex flex-col" data-panel="browser">
+    <div className="h-full flex flex-col bg-ps-bg-850" data-panel="browser">
       {/* Tabs */}
-      <div className="flex border-b border-ps-bg-600">
+      <div className="flex border-b border-ps-bg-600 shrink-0">
         <button
-          className={`flex-1 px-3 py-2 text-xs font-medium transition-colors ${activeTab === 'patterns'
-            ? 'bg-ps-bg-700 text-ps-accent-primary border-b-2 border-ps-accent-primary'
-            : 'text-ps-text-secondary hover:text-ps-text-primary'
+          className={`flex-1 px-4 py-3 text-xs font-semibold transition-all ${activeTab === 'patterns'
+            ? 'bg-ps-bg-800 text-ps-accent-primary border-b-2 border-ps-accent-primary'
+            : 'text-ps-text-muted hover:text-ps-text-secondary hover:bg-ps-bg-800/50'
             }`}
           onClick={() => setActiveTab('patterns')}
         >
           Patterns
         </button>
+        <div className="w-px bg-ps-bg-600" />
         <button
-          className={`flex-1 px-3 py-2 text-xs font-medium transition-colors ${activeTab === 'samples'
-            ? 'bg-ps-bg-700 text-ps-accent-primary border-b-2 border-ps-accent-primary'
-            : 'text-ps-text-secondary hover:text-ps-text-primary'
+          className={`flex-1 px-4 py-3 text-xs font-semibold transition-all ${activeTab === 'samples'
+            ? 'bg-ps-bg-800 text-ps-accent-primary border-b-2 border-ps-accent-primary'
+            : 'text-ps-text-muted hover:text-ps-text-secondary hover:bg-ps-bg-800/50'
             }`}
           onClick={() => setActiveTab('samples')}
         >
@@ -254,15 +255,15 @@ export default function Browser() {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-auto p-2">
+      <div className="flex-1 overflow-auto p-3">
         {activeTab === 'patterns' && (
           <div className="space-y-1">
             {/* Add Pattern Button */}
             <button
-              className="w-full btn btn-ghost text-left text-xs py-2 px-3 flex items-center gap-2"
+              className="w-full text-left text-xs py-2.5 px-4 flex items-center gap-3 rounded-md bg-ps-accent-primary/10 border border-ps-accent-primary/20 text-ps-accent-primary hover:bg-ps-accent-primary/15 transition-all"
               onClick={() => addPattern()}
             >
-              <svg className="w-4 h-4 text-ps-accent-primary" fill="currentColor" viewBox="0 0 20 20">
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                 <path
                   fillRule="evenodd"
                   d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
@@ -271,6 +272,9 @@ export default function Browser() {
               </svg>
               Add Pattern
             </button>
+
+            {/* Divider */}
+            <div className="divider my-3" />
 
             {/* Pattern List */}
             {patterns.map((pattern) => (
@@ -284,9 +288,9 @@ export default function Browser() {
                   });
                 }}
                 onDragEnd={endDrag}
-                className={`group flex items-center gap-2 px-3 py-2 rounded cursor-grab active:cursor-grabbing transition-colors ${selectedPatternId === pattern.id
-                  ? 'bg-ps-bg-600'
-                  : 'hover:bg-ps-bg-700'
+                className={`group flex items-center gap-3 px-4 py-3 rounded-md cursor-grab active:cursor-grabbing transition-all ${selectedPatternId === pattern.id
+                  ? 'bg-ps-accent-primary/15 border border-ps-accent-primary/30'
+                  : 'hover:bg-white/[0.03] border border-transparent'
                   }`}
                 onClick={(e) => {
                   if (suppressClickRef.current || e.defaultPrevented) {
@@ -299,22 +303,24 @@ export default function Browser() {
               >
                 {/* Color indicator */}
                 <div
-                  className="w-3 h-3 rounded-sm shrink-0 pointer-events-none"
+                  className="w-3 h-3 rounded-sm shrink-0 pointer-events-none shadow-sm"
                   style={{ backgroundColor: pattern.color }}
                 />
 
                 {/* Pattern name */}
-                <span className="flex-1 text-xs truncate pointer-events-none">{pattern.name}</span>
+                <span className={`flex-1 text-sm truncate pointer-events-none ${selectedPatternId === pattern.id ? 'font-semibold text-ps-text-primary' : 'text-ps-text-secondary'}`}>
+                  {pattern.name}
+                </span>
 
                 {/* Info */}
-                <span className="text-2xs text-ps-text-muted pointer-events-none">
+                <span className="text-2xs text-ps-text-dim pointer-events-none">
                   {pattern.lengthInSteps} steps
                 </span>
 
                 {/* Actions */}
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-auto">
                   <button
-                    className="btn btn-ghost btn-icon p-1"
+                    className="btn btn-ghost btn-icon p-1.5 hover:bg-white/10"
                     onClick={(e) => {
                       e.stopPropagation();
                       e.preventDefault();
@@ -323,14 +329,14 @@ export default function Browser() {
                     onMouseDown={(e) => e.stopPropagation()}
                     title="Duplicate"
                   >
-                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M7 9a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H9a2 2 0 01-2-2V9z" />
                       <path d="M5 3a2 2 0 00-2 2v6a2 2 0 002 2V5h8a2 2 0 00-2-2H5z" />
                     </svg>
                   </button>
                   {patterns.length > 1 && (
                     <button
-                      className="btn btn-ghost btn-icon p-1 text-ps-accent-red"
+                      className="btn btn-ghost btn-icon p-1.5 text-ps-accent-red hover:bg-red-500/10"
                       onClick={(e) => {
                         e.stopPropagation();
                         e.preventDefault();
@@ -339,7 +345,7 @@ export default function Browser() {
                       onMouseDown={(e) => e.stopPropagation()}
                       title="Delete"
                     >
-                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                         <path
                           fillRule="evenodd"
                           d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
@@ -355,22 +361,22 @@ export default function Browser() {
         )}
 
         {activeTab === 'samples' && (
-          <div className="flex flex-col h-full space-y-2">
+          <div className="flex flex-col h-full space-y-3">
             {/* View Switcher */}
-            <div className="flex gap-2 px-2">
+            <div className="flex gap-2">
               <button
-                className={`flex-1 px-3 py-1.5 text-xs font-medium rounded transition-colors ${sampleView === 'library'
-                  ? 'bg-ps-accent-primary text-white'
-                  : 'bg-ps-bg-700 text-ps-text-secondary hover:text-ps-text-primary'
+                className={`flex-1 px-3 py-2 text-xs font-semibold rounded-md transition-all ${sampleView === 'library'
+                  ? 'bg-ps-accent-primary text-white shadow-sm'
+                  : 'bg-ps-bg-700 text-ps-text-muted hover:text-ps-text-secondary hover:bg-ps-bg-600'
                   }`}
                 onClick={() => setSampleView('library')}
               >
                 📚 Library
               </button>
               <button
-                className={`flex-1 px-3 py-1.5 text-xs font-medium rounded transition-colors ${sampleView === 'user'
-                  ? 'bg-ps-accent-primary text-white'
-                  : 'bg-ps-bg-700 text-ps-text-secondary hover:text-ps-text-primary'
+                className={`flex-1 px-3 py-2 text-xs font-semibold rounded-md transition-all ${sampleView === 'user'
+                  ? 'bg-ps-accent-primary text-white shadow-sm'
+                  : 'bg-ps-bg-700 text-ps-text-muted hover:text-ps-text-secondary hover:bg-ps-bg-600'
                   }`}
                 onClick={() => setSampleView('user')}
               >
@@ -382,13 +388,13 @@ export default function Browser() {
             {sampleView === 'library' && sampleLibrary && (
               <div className="flex-1 flex flex-col overflow-hidden">
                 {/* Category Tabs */}
-                <div className="flex gap-1 px-2 pb-2 border-b border-ps-bg-600 overflow-x-auto">
+                <div className="flex gap-1.5 pb-3 border-b border-ps-bg-600 overflow-x-auto">
                   {getCategoryNames(sampleLibrary).map((category) => (
                     <button
                       key={category}
-                      className={`px-3 py-1.5 text-2xs font-medium rounded whitespace-nowrap transition-colors ${selectedCategory === category
-                        ? 'bg-ps-bg-700 text-ps-accent-primary'
-                        : 'text-ps-text-secondary hover:text-ps-text-primary'
+                      className={`px-3 py-2 text-2xs font-semibold rounded-md whitespace-nowrap transition-all ${selectedCategory === category
+                        ? 'bg-ps-bg-700 text-ps-accent-primary border border-ps-accent-primary/30'
+                        : 'text-ps-text-muted hover:text-ps-text-secondary hover:bg-ps-bg-700/50'
                         }`}
                       onClick={() => {
                         setSelectedCategory(category);

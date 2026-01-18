@@ -206,7 +206,7 @@ export default function TopToolbar() {
 
   return (
     <>
-      <div className="h-12 bg-ps-bg-800 border-b border-ps-bg-600 flex items-center px-4 gap-4 shrink-0">
+      <div className="h-14 bg-ps-bg-800 border-b border-ps-bg-600 flex items-center px-5 gap-4 shrink-0 shadow-md">
         {/* Logo - Click to go to Dashboard */}
         <button
           onClick={() => {
@@ -218,50 +218,57 @@ export default function TopToolbar() {
               router.push('/dashboard');
             }
           }}
-          className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer"
+          className="flex items-center gap-2.5 hover:opacity-80 transition-opacity cursor-pointer group"
           title="Go to Dashboard"
         >
-          <svg
-            className="w-6 h-6"
-            viewBox="0 0 100 100"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <circle cx="50" cy="50" r="40" stroke="#ff6b35" strokeWidth="4" />
-            <circle cx="50" cy="50" r="20" fill="#ff6b35" />
-          </svg>
-          <span className="font-bold text-sm text-ps-accent-primary">PULSE</span>
+          <div className="relative">
+            <svg
+              className="w-8 h-8 transition-transform group-hover:scale-105"
+              viewBox="0 0 100 100"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle cx="50" cy="50" r="40" stroke="#ff7a4a" strokeWidth="4" className="opacity-60" />
+              <circle cx="50" cy="50" r="25" fill="#ff7a4a" className="opacity-80" />
+              <circle cx="50" cy="50" r="12" fill="#ff7a4a" />
+            </svg>
+            <div className="absolute inset-0 rounded-full bg-ps-accent-primary/20 blur-lg opacity-0 group-hover:opacity-100 transition-opacity" />
+          </div>
+          <div className="flex flex-col">
+            <span className="font-bold text-base text-ps-accent-primary tracking-wide leading-none">PULSE</span>
+            <span className="text-2xs text-ps-text-dim uppercase tracking-widest">Studio</span>
+          </div>
         </button>
 
         {/* Divider */}
-        <div className="w-px h-6 bg-ps-bg-600" />
+        <div className="w-px h-7 bg-ps-bg-600" />
 
         {/* File Menu */}
         <div className="flex items-center gap-1">
           <Dropdown
-            trigger={<button className="btn btn-ghost text-xs">File</button>}
+            trigger={<button className="btn btn-ghost text-xs px-3 py-2">File</button>}
             items={fileMenuItems}
           />
           <Dropdown
-            trigger={<button className="btn btn-ghost text-xs">Edit</button>}
+            trigger={<button className="btn btn-ghost text-xs px-3 py-2">Edit</button>}
             items={editMenuItems}
           />
           <Dropdown
-            trigger={<button className="btn btn-ghost text-xs">View</button>}
+            trigger={<button className="btn btn-ghost text-xs px-3 py-2">View</button>}
             items={viewMenuItems}
           />
           <Dropdown
-            trigger={<button className="btn btn-ghost text-xs">Help</button>}
+            trigger={<button className="btn btn-ghost text-xs px-3 py-2">Help</button>}
             items={helpMenuItems}
           />
         </div>
 
         {/* Divider */}
-        <div className="w-px h-6 bg-ps-bg-600" />
+        <div className="w-px h-7 bg-ps-bg-600" />
 
         {/* Project Name */}
         <div className="flex items-center gap-2">
-          <span className="text-xs text-ps-text-secondary">Project:</span>
+          <span className="text-xs text-ps-text-muted uppercase tracking-wide">Project:</span>
           {isEditingName ? (
             <div className="flex items-center gap-1">
               <input

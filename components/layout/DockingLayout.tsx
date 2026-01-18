@@ -39,27 +39,30 @@ const PANEL_COMPONENTS: Record<PanelType, React.FC> = {
   chat: ChatPanel,
 };
 
-// Default layout - Piano Roll is now a modal, not embedded
+// Secondary panels that get darker styling
+const SECONDARY_PANELS: PanelType[] = ['browser', 'channelRack', 'mixer'];
+
+// Default layout - AI panel on right side (Option A: Right-Side Vertical AI Dock)
 const DEFAULT_LAYOUT: MosaicNode<PanelType> = {
   direction: 'row',
   first: {
-    direction: 'column',
-    first: 'chat',
-    second: {
+    direction: 'row',
+    first: {
       direction: 'column',
       first: 'browser',
       second: 'channelRack',
       splitPercentage: 50,
     },
-    splitPercentage: 30,
+    second: {
+      direction: 'column',
+      first: 'playlist',
+      second: 'mixer',
+      splitPercentage: 60,
+    },
+    splitPercentage: 22,
   },
-  second: {
-    direction: 'column',
-    first: 'playlist',
-    second: 'mixer',
-    splitPercentage: 60,
-  },
-  splitPercentage: 20,
+  second: 'chat',
+  splitPercentage: 78,
 };
 
 export default function DockingLayout() {
@@ -74,14 +77,23 @@ export default function DockingLayout() {
   const renderTile = useCallback((id: PanelType, path: MosaicBranch[]) => {
     const Component = PANEL_COMPONENTS[id];
     const title = PANEL_TITLES[id];
+    const isSecondary = SECONDARY_PANELS.includes(id);
+    const isAI = id === 'chat';
 
     return (
       <MosaicWindow<PanelType>
         path={path}
         title={title}
         toolbarControls={<PanelToolbar panelId={id} />}
+        className={isAI ? 'ai-panel-window' : ''}
       >
-        <div className="h-full w-full bg-ps-bg-800 overflow-hidden">
+        <div className={`h-full w-full overflow-hidden ${
+          isAI 
+            ? '' // AI panel has its own background 
+            : isSecondary 
+              ? 'bg-ps-bg-850' 
+              : 'bg-ps-bg-800'
+        }`}>
           <Component />
         </div>
       </MosaicWindow>
@@ -107,16 +119,20 @@ export default function DockingLayout() {
 
 // Panel toolbar component
 function PanelToolbar({ panelId }: { panelId: PanelType }) {
+  const isAI = panelId === 'chat';
+  
   return (
     <div className="flex items-center gap-1">
-      <button
-        className="btn btn-ghost btn-icon opacity-50 hover:opacity-100"
-        title="Panel options"
-      >
-        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-          <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-        </svg>
-      </button>
+      {!isAI && (
+        <button
+          className="btn btn-ghost btn-icon opacity-50 hover:opacity-100 transition-opacity"
+          title="Panel options"
+        >
+          <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+          </svg>
+        </button>
+      )}
     </div>
   );
 }
