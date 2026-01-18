@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useStore } from '@/state/store';
 import type { ChatMessage } from '@/lib/ai/types';
+import { undoLastAIAction, canUndoAIAction } from '@/lib/ai/undoHandler';
 
 // Format timestamp as relative time
 function formatRelativeTime(timestamp: number): string {
@@ -29,13 +30,12 @@ function Message({ message }: { message: ChatMessage }) {
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-3`}>
       <div className={`max-w-[80%] ${isUser ? 'order-2' : 'order-1'}`}>
         <div
-          className={`rounded-lg px-4 py-2 ${
-            isUser
+          className={`rounded-lg px-4 py-2 ${isUser
               ? 'bg-blue-600 text-white'
               : isError
-              ? 'bg-red-900 text-red-100'
-              : 'bg-gray-800 text-gray-100'
-          } ${isSending ? 'opacity-60' : ''}`}
+                ? 'bg-red-900 text-red-100'
+                : 'bg-gray-800 text-gray-100'
+            } ${isSending ? 'opacity-60' : ''}`}
         >
           <p className="text-sm whitespace-pre-wrap break-words">{message.text}</p>
         </div>
@@ -93,7 +93,7 @@ export default function ChatPanel() {
   // Auto-resize textarea based on content
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInputText(e.target.value);
-    
+
     // Calculate rows (max 5)
     const lineCount = e.target.value.split('\n').length;
     const newRows = Math.min(lineCount, 5);
@@ -137,10 +137,12 @@ export default function ChatPanel() {
     }
   };
 
-  // Handle undo (placeholder for Phase 4)
+  // Handle undo
   const handleUndo = () => {
-    // TODO Phase 4: Implement undo functionality
-    console.log('Undo last AI action');
+    const success = undoLastAIAction();
+    if (!success) {
+      console.warn('Could not undo: No AI action to undo or undo history is empty');
+    }
   };
 
   return (
@@ -212,7 +214,7 @@ export default function ChatPanel() {
       <div className="flex items-center gap-2 px-4 py-2 border-t border-gray-800">
         <button
           onClick={handleUndo}
-          disabled={!lastAICommandId || isPending}
+          disabled={!canUndoAIAction() || isPending}
           className="text-xs px-3 py-1.5 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed rounded transition-colors"
           title="Undo last AI action"
         >
@@ -262,7 +264,7 @@ export default function ChatPanel() {
           </button>
         </div>
         <p className="text-xs text-gray-600 mt-2">
-          Press <kbd className="px-1 py-0.5 bg-gray-800 rounded text-gray-400">Enter</kbd> to send, 
+          Press <kbd className="px-1 py-0.5 bg-gray-800 rounded text-gray-400">Enter</kbd> to send,
           <kbd className="px-1 py-0.5 bg-gray-800 rounded text-gray-400 ml-1">Shift+Enter</kbd> for new line
         </p>
       </div>
