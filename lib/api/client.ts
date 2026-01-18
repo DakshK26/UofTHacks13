@@ -181,6 +181,10 @@ export const apiClient = {
         // filePath should be: userId/projectId/filename (no 'assets/' prefix)
         const filePath = pathMatch[1];
 
+        if (!filePath) {
+            throw new Error('Could not extract file path from URL');
+        }
+
         const { error } = await supabase
             .storage
             .from('assets')

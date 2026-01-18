@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useStore } from '@/state/store';
+import { AudioAsset } from '@/domain/types';
 import {
   loadSampleLibrary,
   getCategoryNames,
@@ -74,11 +75,11 @@ export default function Browser() {
 
   const playPreview = useCallback((url: string | null, sampleId?: string) => {
     if (!url) return;
-    
+
     // If clicking the same sample that's loaded
     if (playingSampleId === sampleId && previewAudioRef.current) {
       const audio = previewAudioRef.current;
-      
+
       // Toggle play/pause
       if (audio.paused) {
         audio.play().catch(() => { });
@@ -91,12 +92,12 @@ export default function Browser() {
     // Different sample - stop current and play new one
     const audio = previewAudioRef.current ?? new Audio();
     previewAudioRef.current = audio;
-    
+
     audio.pause();
     audio.currentTime = 0;
     audio.src = url;
     audio.play().catch(() => { });
-    
+
     if (sampleId) {
       setPlayingSampleId(sampleId);
     }
@@ -450,7 +451,7 @@ export default function Browser() {
                       />
                     </div>
                   </div>
-                  
+
                   <div className="space-y-1 p-2">
                     {getSamplesByCategory(
                       sampleLibrary,
@@ -482,7 +483,7 @@ export default function Browser() {
                           >
                             <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                           </svg>
-                          
+
                           <div className="flex-1 min-w-0 pointer-events-none">
                             <div className="text-xs truncate">{sample.name}</div>
                             <div className="text-2xs text-ps-text-muted">
@@ -490,7 +491,7 @@ export default function Browser() {
                             </div>
                           </div>
                         </div>
-                        
+
                         {/* Waveform display */}
                         <div className="mt-2 ml-6 pointer-events-none">
                           <WaveformCanvas

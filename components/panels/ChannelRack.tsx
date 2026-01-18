@@ -62,6 +62,7 @@ export default function ChannelRack() {
     toggleChannelMute,
     toggleChannelSolo,
     setChannelVolume,
+    setChannelPan,
     updateChannel,
     getAudioAssetData,
   } = useStore();
@@ -299,8 +300,8 @@ function ChannelRow({
         onClose={() => setShowSettings(false)}
       />
       <div
-        className={`flex items-center border-b border-ps-bg-700 transition-all ${isSelected 
-          ? 'bg-ps-bg-700 shadow-sm' 
+        className={`flex items-center border-b border-ps-bg-700 transition-all ${isSelected
+          ? 'bg-ps-bg-700 shadow-sm'
           : 'hover:bg-ps-bg-800'
           }`}
         style={{ minHeight: '52px' }}
@@ -344,8 +345,8 @@ function ChannelRow({
             </svg>
           </button>
           <button
-            className={`btn btn-icon w-6 h-6 text-2xs font-bold transition-all ${channel.mute 
-              ? 'bg-ps-accent-red text-white shadow-sm' 
+            className={`btn btn-icon w-6 h-6 text-2xs font-bold transition-all ${channel.mute
+              ? 'bg-ps-accent-red text-white shadow-sm'
               : 'btn-ghost hover:bg-white/10'
               }`}
             onClick={(e) => {
@@ -357,8 +358,8 @@ function ChannelRow({
             M
           </button>
           <button
-            className={`btn btn-icon w-6 h-6 text-2xs font-bold transition-all ${channel.solo 
-              ? 'bg-ps-accent-tertiary text-black shadow-sm' 
+            className={`btn btn-icon w-6 h-6 text-2xs font-bold transition-all ${channel.solo
+              ? 'bg-ps-accent-tertiary text-black shadow-sm'
               : 'btn-ghost hover:bg-white/10'
               }`}
             onClick={(e) => {

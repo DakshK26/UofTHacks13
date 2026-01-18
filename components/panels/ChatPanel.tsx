@@ -177,16 +177,8 @@ export default function ChatPanel() {
             if (batchResult.success) {
               chat.addMessage('agent', batchResult.message, 'sent');
 
-              // Store model info for this message
-              if (modelInfo) {
-                const newMsgId = messages[messages.length]?.id; // Will be the next message
-                setMessageModelInfoMap(prev => {
-                  const newMap = new Map(prev);
-                  // Store for the latest agent message
-                  newMap.set(`agent_${Date.now()}`, modelInfo);
-                  return newMap;
-                });
-              }
+              // Model info is already tracked via pendingModelInfo state
+              // and can be displayed in the UI if needed
 
               // Track command for undo functionality
               if (batchResult.undoGroupId) {
@@ -397,29 +389,15 @@ export default function ChatPanel() {
         ) : (
           // Messages
           <>
-            {messages.map((message, index) => {
-              // For agent messages, try to get the model info
-              // We show the pending model info for the most recent agent message
-              const isLastAgentMessage = message.from === 'agent' &&
-                index === messages.length - 1;
-              const modelInfoForMessage = isLastAgentMessage && pendingModelInfo ? pendingModelInfo : undefined;
-
+            {messages.map((message) => {
               return (
                 <Message
                   key={message.id}
                   message={message}
-                  modelInfo={modelInfoForMessage}
                 />
               );
             })}
-            {isPending && (
-              <TypingIndicator
-                classifyingText={pendingModelInfo
-                  ? `🎯 ${pendingModelInfo.taskType === 'creative' ? 'Creative' : pendingModelInfo.taskType === 'analytical' ? 'Analytical' : 'Technical'} task → ${pendingModelInfo.provider === 'google' ? 'Gemini' : pendingModelInfo.provider === 'anthropic' ? 'Claude' : 'GPT-4o'}`
-                  : undefined
-                }
-              />
-            )}
+            {isPending && <TypingIndicator />}
             <div ref={messagesEndRef} />
           </>
         )}

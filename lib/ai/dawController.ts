@@ -4,7 +4,7 @@
  */
 
 import { useStore } from '@/state/store';
-import type { PatternClip } from '@/domain/types';
+import type { PatternClip, UUID, AudioClip } from '@/domain/types';
 import type {
   AICommand,
   CommandResult,
@@ -328,6 +328,7 @@ export function executeNoteCommand(
     // Validate all notes first
     for (let i = 0; i < seqCmd.notes.length; i++) {
       const note = seqCmd.notes[i];
+      if (!note) continue;
       const pitchValidation = validatePitch(note.pitch);
       if (!pitchValidation.valid) {
         return { success: false, message: `Note ${i + 1}: ${pitchValidation.error}` };
@@ -516,12 +517,16 @@ export async function executeSampleCommand(cmd: AddAudioSampleCommand): Promise<
       // Add clip to track
       store.addClip({
         type: 'audio',
-        assetId: assetId,
+        assetId: assetId as UUID,
         trackIndex: cmd.trackIndex,
         startTick,
         durationTick: durationTicks,
+        offset: 0,
         color: '#4a9eff',
-      });
+        mute: false,
+        gain: 1,
+        pitch: 0,
+      } as Omit<AudioClip, 'id'>);
 
       // Get the created clip ID (it's the last clip added to the playlist)
       const updatedProject = useStore.getState().project;

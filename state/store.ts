@@ -1363,20 +1363,22 @@ export const useStore = create<StoreState>()(
                     const clipIndex = draft.project.playlist.clips.findIndex((c) => c.id === clip.id);
                     if (clipIndex !== -1) {
                       const originalClip = draft.project.playlist.clips[clipIndex];
-                      // Replace with audio clip, preserving color
-                      draft.project.playlist.clips[clipIndex] = {
-                        id: originalClip.id,
-                        type: 'audio',
-                        trackIndex: originalClip.trackIndex,
-                        startTick: originalClip.startTick,
-                        durationTick: originalClip.durationTick,
-                        mute: originalClip.mute,
-                        assetId: renderedAsset.id as UUID,
-                        offset: 0,
-                        color: originalClip.type === 'pattern' ? originalClip.color : '#4a9eff',
-                        gain: 1,
-                        pitch: 0,
-                      };
+                      if (originalClip) {
+                        // Replace with audio clip, preserving color
+                        draft.project.playlist.clips[clipIndex] = {
+                          id: originalClip.id,
+                          type: 'audio',
+                          trackIndex: originalClip.trackIndex,
+                          startTick: originalClip.startTick,
+                          durationTick: originalClip.durationTick,
+                          mute: originalClip.mute,
+                          assetId: renderedAsset.id as UUID,
+                          offset: 0,
+                          color: originalClip.type === 'pattern' ? originalClip.color : '#4a9eff',
+                          gain: 1,
+                          pitch: 0,
+                        };
+                      }
                     }
 
                     draft.project.updatedAt = new Date().toISOString();

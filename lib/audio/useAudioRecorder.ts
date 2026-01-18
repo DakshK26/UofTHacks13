@@ -29,7 +29,7 @@ export function useAudioRecorder() {
                 const audioInputs = devices.filter(d => d.kind === 'audioinput');
                 
                 // Check if we have labels (meaning permission was granted)
-                if (audioInputs.length > 0 && audioInputs[0].label) {
+                if (audioInputs.length > 0 && audioInputs[0]?.label) {
                     setPermissionState('granted');
                     setAvailableDevices(audioInputs);
                     setIsInitialized(true);

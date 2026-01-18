@@ -758,236 +758,231 @@ input[type="range"]:hover::-moz-range-thumb {
   50% {
     background-color: #c0392b;
   }
+}
 
-  /* AI Assistant Panel Styles - Vercel Inspired */
+/* AI Assistant Panel Styles - Vercel Inspired */
 
-  .recording-indicator {
-    /* Chat panel uses Tailwind classes directly in component */
-    /* These are fallback/legacy styles kept for compatibility */
+.recording-indicator {
+  /* Chat panel uses Tailwind classes directly in component */
+  /* These are fallback/legacy styles kept for compatibility */
+  animation: recording-blink 1s infinite;
+}
 
-    animation: recording-blink 1s infinite;
-    background: #000000;
-    border-left: 1px solid #18181b;
-    /* ============================================ */
-    /* Step Sequencer */
-    /* ============================================ */
+/* ============================================ */
+/* Step Sequencer */
+/* ============================================ */
 
-    background: transparent;
-    border-bottom: 1px solid #18181b;
-    padding: 12px 16px;
+.step-playing {
+  box-shadow: 0 0 12px var(--ps-accent-primary);
+  background: #ffffff;
+  color: #000000;
+}
 
-    .step-playing {
-      box-shadow: 0 0 12px var(--ps-accent-primary);
-      background: #ffffff;
-      color: #000000;
-      /* ============================================ */
-      /* Transport */
-      /* ============================================ */
+/* ============================================ */
+/* Transport */
+/* ============================================ */
 
-      background: #18181b;
-      border: 1px solid #27272a;
-      color: #fafafa;
-      border: 1px solid var(--ps-bg-600);
-      border-radius: 3px;
-      padding: 4px 8px;
-      font-size: 14px;
-      background: transparent;
-      border-top: 1px solid #18181b;
+.transport {
+  background: #18181b;
+  border: 1px solid #27272a;
+  color: #fafafa;
+  border: 1px solid var(--ps-bg-600);
+  border-radius: 3px;
+  padding: 4px 8px;
+  font-size: 14px;
+}
 
-      /* ============================================ */
-      /* Context Menu */
-      background: #18181b;
-      border: 1px solid #27272a;
-      border-radius: 12px;
-      background: var(--ps-bg-700);
-      border: 1px solid var(--ps-bg-500);
-      border-radius: 4px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-      border-color: #3f3f46;
-      box-shadow: none;
-    }
+/* ============================================ */
+/* Context Menu */
+/* ============================================ */
 
-    .context-menu-item {
-      background: #ffffff;
-      border-radius: 8px;
-      font-size: 11px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: #e4e4e7;
-      transform: none;
+.context-menu {
+  background: var(--ps-bg-700);
+  border: 1px solid var(--ps-bg-500);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
 
-      .context-menu-item:hover {
-        background: var(--ps-bg-600);
-      }
+.context-menu-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
-      transform: scale(0.97);
+.context-menu-item:hover {
+  background: var(--ps-bg-600);
+  transform: scale(0.97);
+}
 
-      .context-menu-separator {
-        height: 1px;
+.context-menu-separator {
+  height: 1px;
+}
 
-        .ai-send-btn:disabled {
-          background: #27272a;
+.ai-send-btn:disabled {
+  background: #27272a;
+}
 
-          .tooltip {
-            background: var(--ps-bg-600);
-            border: 1px solid var(--ps-bg-500);
+.tooltip {
+  background: var(--ps-bg-600);
+  border: 1px solid var(--ps-bg-500);
+  opacity: 0.4;
+  font-size: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  white-space: nowrap;
+}
 
-            0%,
-            100% {
-              opacity: 0.4;
-              font-size: 10px;
-              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-              white-space: nowrap;
-            }
+/* ============================================ */
+/* Loading */
+/* ============================================ */
 
-            /* ============================================ */
-            /* Loading */
-            /* ============================================ */
+.loading-spinner {
+  border: 2px solid var(--ps-bg-500);
+  border-top-color: var(--ps-accent-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
 
-            .loading-spinner {
-              border: 2px solid var(--ps-bg-500);
-              border-top-color: var(--ps-accent-primary);
-              border-radius: 50%;
-              animation: spin 0.8s linear infinite;
-            }
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
-            @keyframes spin {
-              to {}
-            }
+.ai-input {
+  background: var(--ps-bg-800);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: var(--ps-radius-lg);
+  transition: all var(--ps-transition-normal);
+}
 
-            .ai-input {
-              background: var(--ps-bg-800);
-              border: 1px solid rgba(99, 102, 241, 0.2);
-              border-radius: var(--ps-radius-lg);
-              transition: all var(--ps-transition-normal);
-            }
+.ai-input:focus {
+  border-color: var(--ps-ai-accent);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
 
-            .ai-input:focus {
-              border-color: var(--ps-ai-accent);
-              box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
-            }
+.ai-send-btn {
+  background: var(--ps-ai-accent);
+  border-radius: var(--ps-radius-md);
+  transition: all var(--ps-transition-fast);
+}
 
-            .ai-send-btn {
-              background: var(--ps-ai-accent);
-              border-radius: var(--ps-radius-md);
-              transition: all var(--ps-transition-fast);
-            }
+.ai-send-btn:hover {
+  background: #818cf8;
+  transform: scale(1.05);
+}
 
-            .ai-send-btn:hover {
-              background: #818cf8;
-              transform: scale(1.05);
-            }
+.ai-send-btn:active {
+  transform: scale(0.95);
+}
 
-            .ai-send-btn:active {
-              transform: scale(0.95);
-            }
+.ai-model-pill {
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 10px;
+  font-weight: 500;
+  color: #a5b4fc;
+}
 
-            .ai-model-pill {
-              background: rgba(99, 102, 241, 0.15);
-              border: 1px solid rgba(99, 102, 241, 0.3);
-              border-radius: 999px;
-              padding: 4px 10px;
-              font-size: 10px;
-              font-weight: 500;
-              color: #a5b4fc;
-            }
+@keyframes ai-pulse {
 
-            @keyframes ai-pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
 
-              0%,
-              100% {
-                opacity: 0.5;
-              }
+  50% {
+    opacity: 1;
+  }
+}
 
-              50% {
-                opacity: 1;
-              }
-            }
+.ai-typing-indicator {
+  display: flex;
+  gap: 4px;
+  padding: 8px 12px;
+}
 
-            .ai-typing-indicator {
-              display: flex;
-              gap: 4px;
-              padding: 8px 12px;
-            }
+.ai-typing-indicator span {
+  width: 6px;
+  height: 6px;
+  background: var(--ps-ai-accent);
+  border-radius: 50%;
+  animation: ai-pulse 1.4s ease-in-out infinite;
+}
 
-            .ai-typing-indicator span {
-              width: 6px;
-              height: 6px;
-              background: var(--ps-ai-accent);
-              border-radius: 50%;
-              animation: ai-pulse 1.4s ease-in-out infinite;
-            }
+.ai-typing-indicator span:nth-child(2) {
+  animation-delay: 0.2s;
+}
 
-            .ai-typing-indicator span:nth-child(2) {
-              animation-delay: 0.2s;
-            }
+.ai-typing-indicator span:nth-child(3) {
+  animation-delay: 0.4s;
+}
 
-            .ai-typing-indicator span:nth-child(3) {
-              animation-delay: 0.4s;
-            }
+/* ============================================ */
+/* Hover States */
+/* ============================================ */
 
-            /* ============================================ */
-            /* Hover States */
-            /* ============================================ */
+.hover-highlight {
+  transition: background var(--ps-transition-fast);
+}
 
-            .hover-highlight {
-              transition: background var(--ps-transition-fast);
-            }
+.hover-highlight:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
 
-            .hover-highlight:hover {
-              background: rgba(255, 255, 255, 0.03);
-            }
+.hover-scale {
+  transition: transform var(--ps-transition-fast);
+}
 
-            .hover-scale {
-              transition: transform var(--ps-transition-fast);
-            }
+.hover-scale:hover {
+  transform: scale(1.02);
+}
 
-            .hover-scale:hover {
-              transform: scale(1.02);
-            }
+/* Active state glow for patterns/tracks */
+.active-glow {
+  box-shadow: 0 0 0 1px var(--ps-accent-primary), 0 0 12px rgba(255, 122, 74, 0.2);
+}
 
-            /* Active state glow for patterns/tracks */
-            .active-glow {
-              box-shadow: 0 0 0 1px var(--ps-accent-primary), 0 0 12px rgba(255, 122, 74, 0.2);
-            }
+/* ============================================ */
+/* List Item Styles */
+/* ============================================ */
 
-            /* ============================================ */
-            /* List Item Styles */
-            /* ============================================ */
+.list-item {
+  padding: 10px 14px;
+  border-radius: var(--ps-radius-sm);
+  transition: all var(--ps-transition-fast);
+  cursor: pointer;
+}
 
-            .list-item {
-              padding: 10px 14px;
-              border-radius: var(--ps-radius-sm);
-              transition: all var(--ps-transition-fast);
-              cursor: pointer;
-            }
+.list-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
 
-            .list-item:hover {
-              background: rgba(255, 255, 255, 0.04);
-            }
+.list-item-active {
+  background: rgba(255, 122, 74, 0.12);
+  font-weight: 600;
+}
 
-            .list-item-active {
-              background: rgba(255, 122, 74, 0.12);
-              font-weight: 600;
-            }
+.list-item-active:hover {
+  background: rgba(255, 122, 74, 0.18);
+}
 
-            .list-item-active:hover {
-              background: rgba(255, 122, 74, 0.18);
-            }
+/* ============================================ */
+/* Dividers */
+/* ============================================ */
 
-            /* ============================================ */
-            /* Dividers */
-            /* ============================================ */
+.divider {
+  height: 1px;
+  background: var(--ps-bg-600);
+  margin: 8px 0;
+}
 
-            .divider {
-              height: 1px;
-              background: var(--ps-bg-600);
-              margin: 8px 0;
-            }
-
-            .divider-vertical {
-              width: 1px;
-              background: var(--ps-bg-600);
-              margin: 0 8px;
-            }
+.divider-vertical {
+  width: 1px;
+  background: var(--ps-bg-600);
+  margin: 0 8px;
+}

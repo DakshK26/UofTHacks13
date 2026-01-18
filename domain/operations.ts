@@ -162,7 +162,7 @@ function getSynthPresetSettings(preset: string): Partial<SynthSettings> {
     metallic: { oscillatorType: 'square', attack: 0.001, decay: 0.6, sustain: 0.2, release: 0.8, filterCutoff: 5000, filterResonance: 5 },
   };
 
-  return PRESETS[preset] ?? PRESETS.default;
+  return PRESETS[preset] || PRESETS.default || {};
 }
 
 export function createDefaultSamplerSettings(): SamplerSettings {
@@ -552,7 +552,7 @@ const SAMPLE_COLORS: Record<string, string> = {
  * Extracts category from sample ID (format: category_subcategory_name) or name
  */
 export function getSampleColor(sampleIdOrName: string): string {
-  if (!sampleIdOrName) return SAMPLE_COLORS['default'];
+  if (!sampleIdOrName) return SAMPLE_COLORS['default'] || '#4ecdc4';
 
   const lower = sampleIdOrName.toLowerCase();
 
@@ -563,12 +563,12 @@ export function getSampleColor(sampleIdOrName: string): string {
     const subcategory = parts[1];
 
     // Try subcategory first (more specific)
-    if (SAMPLE_COLORS[subcategory]) {
+    if (subcategory && SAMPLE_COLORS[subcategory]) {
       return SAMPLE_COLORS[subcategory];
     }
 
     // Try category
-    if (SAMPLE_COLORS[category]) {
+    if (category && SAMPLE_COLORS[category]) {
       return SAMPLE_COLORS[category];
     }
   }
@@ -580,7 +580,7 @@ export function getSampleColor(sampleIdOrName: string): string {
     }
   }
 
-  return SAMPLE_COLORS['default'];
+  return SAMPLE_COLORS['default'] || '#4ecdc4';
 }
 
 // ============================================

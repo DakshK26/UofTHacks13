@@ -42,9 +42,9 @@ export default function Transport() {
         // Try to enumerate devices first
         const devices = await navigator.mediaDevices.enumerateDevices();
         const audioInputs = devices.filter(d => d.kind === 'audioinput');
-        
+
         // If we have devices with labels, permission was granted
-        if (audioInputs.length > 0 && audioInputs[0].label) {
+        if (audioInputs.length > 0 && audioInputs[0]?.label) {
           setPermissionState('granted');
           setAvailableDevices(audioInputs);
         } else if (audioInputs.length > 0) {
@@ -57,7 +57,7 @@ export default function Transport() {
           try {
             const result = await navigator.permissions.query({ name: 'microphone' as PermissionName });
             setPermissionState(result.state as 'prompt' | 'granted' | 'denied');
-            
+
             result.onchange = () => {
               setPermissionState(result.state as 'prompt' | 'granted' | 'denied');
               // Re-enumerate devices on permission change
@@ -73,7 +73,7 @@ export default function Transport() {
         console.error('Failed to enumerate devices:', err);
       }
     };
-    
+
     checkPermissionAndDevices();
 
     // Listen for device changes
@@ -82,7 +82,7 @@ export default function Transport() {
         setAvailableDevices(devices.filter(d => d.kind === 'audioinput'));
       });
     };
-    
+
     navigator.mediaDevices.addEventListener('devicechange', handleDeviceChange);
     return () => {
       navigator.mediaDevices.removeEventListener('devicechange', handleDeviceChange);
@@ -92,7 +92,7 @@ export default function Transport() {
   // Update recording duration timer
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | null = null;
-    
+
     if (isRecording && recordingStartTime) {
       interval = setInterval(() => {
         setRecordingDuration((Date.now() - recordingStartTime) / 1000);
@@ -100,7 +100,7 @@ export default function Transport() {
     } else {
       setRecordingDuration(0);
     }
-    
+
     return () => {
       if (interval) clearInterval(interval);
     };
@@ -130,7 +130,7 @@ export default function Transport() {
       // Stop the tracks immediately - we just needed permission
       stream.getTracks().forEach(track => track.stop());
       setPermissionState('granted');
-      
+
       // Re-enumerate devices after permission granted
       const devices = await navigator.mediaDevices.enumerateDevices();
       const audioInputs = devices.filter(d => d.kind === 'audioinput');
@@ -171,7 +171,7 @@ export default function Transport() {
 
   const handleRecord = async () => {
     setRecordingError(null);
-    
+
     if (isRecording) {
       // Stop recording
       try {
@@ -194,10 +194,10 @@ export default function Transport() {
       try {
         const countIn = recording.countInBars;
         const deviceId = recording.inputDeviceId || undefined;
-        
+
         console.log('[Transport] Starting recording with count-in:', countIn, 'device:', deviceId);
         setRecordingStartTime(Date.now());
-        
+
         await useStore.getState().recordAudio(countIn, deviceId);
         console.log('[Transport] Recording started');
       } catch (error) {
@@ -273,11 +273,10 @@ export default function Transport() {
 
         {/* Record */}
         <button
-          className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all ${
-            isRecording 
-              ? 'bg-red-600 hover:bg-red-700 text-white animate-pulse' 
+          className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all ${isRecording
+              ? 'bg-red-600 hover:bg-red-700 text-white animate-pulse'
               : 'text-[#888] hover:bg-red-600/20 hover:text-red-400'
-          }`}
+            }`}
           onClick={handleRecord}
           title={isRecording ? 'Stop Recording' : `Record (${recording.countInBars} bar count-in)`}
         >
