@@ -93,8 +93,9 @@ export function executePatternCommand(
     try {
       store.addPattern(cmd.name);
 
-      // Get the newly created pattern ID
-      const newPattern = store.project?.patterns[store.project.patterns.length - 1];
+      // Get fresh store state after the mutation (store.project is stale after addPattern)
+      const updatedStore = useStore.getState();
+      const newPattern = updatedStore.project?.patterns[updatedStore.project.patterns.length - 1];
       const newPatternId = newPattern?.id;
 
       // Set length if specified
@@ -692,8 +693,9 @@ export function executeChannelCommand(
       const channelName = cmd.name || `${cmd.type === 'synth' ? 'Synth' : 'Sampler'} ${project.channels.length + 1}`;
       store.addChannel(channelName, cmd.type, cmd.preset);
 
-      // Get the newly created channel ID
-      const newChannel = store.project?.channels[store.project.channels.length - 1];
+      // Get fresh store state after the mutation (store.project is stale after addChannel)
+      const updatedStore = useStore.getState();
+      const newChannel = updatedStore.project?.channels[updatedStore.project.channels.length - 1];
       const newChannelId = newChannel?.id;
 
       return {
@@ -945,9 +947,16 @@ export function executePlaylistCommand(
 
       store.addClip(clipData);
 
+      // Get the created clip ID (it's the last clip added to the playlist)
+      const updatedProject = useStore.getState().project;
+      const clips = updatedProject?.playlist.clips || [];
+      const createdClip = clips[clips.length - 1];
+      const clipId = createdClip?.id;
+
       return {
         success: true,
         message: `Added clip for pattern "${pattern.name}" to track "${track.name}" at tick ${cmd.startTick}`,
+        data: clipId ? { clipId } : undefined,
       };
     } catch (error) {
       return {

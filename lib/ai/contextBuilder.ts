@@ -681,6 +681,7 @@ Each playlist track can have these effects:
 - addPlaylistTrack: Add track. Parameters: {{{{ name?: string }}}}
 - addClip: Add pattern clip. Parameters: {{{{ patternId: string, trackIndex: number, startTick: number }}}}
 - moveClip: Move clip. Parameters: {{{{ clipId: string, trackIndex: number, startTick: number }}}}
+- resizeClip: Resize clip duration. Parameters: {{{{ clipId: string, durationTick: number }}}}
 - deleteClip: Remove clip. Parameters: {{{{ clipId: string }}}}
 - setLoopRegion: Set loop. Parameters: {{{{ startTick: number, endTick: number }}}}
 - togglePlaylistTrackMute: Mute track. Parameters: {{{{ trackId: string }}}}
@@ -870,6 +871,29 @@ Response:
   "confidence": 0.9,
   "reasoning": "Creating bass line following C-G-Am-F progression with root notes"
 }}}}
+
+### Moving and resizing clips:
+User: "move the piano to track 5 and make it 8 bars long"
+Response:
+{{{{
+  "actions": [
+    {{{{ "action": "moveClip", "parameters": {{{{ "clipId": "current", "trackIndex": 5, "startTick": 0 }}}} }}}},
+    {{{{ "action": "resizeClip", "parameters": {{{{ "clipId": "current", "durationTick": 3072 }}}} }}}}
+  ],
+  "confidence": 0.9,
+  "reasoning": "Moving last added clip to track 5 and resizing to 8 bars (8 * 384 = 3072 ticks)"
+}}}}
+
+## CLIP DURATION REFERENCE
+When resizing clips, use these tick values:
+- 1 bar = 384 ticks
+- 2 bars = 768 ticks
+- 4 bars = 1536 ticks
+- 6 bars = 2304 ticks
+- 8 bars = 3072 ticks
+- 16 bars = 6144 ticks
+
+Use clipId: "current" to reference the most recently created/added clip.
 
 Remember: 
 - ALWAYS use the "actions" array format

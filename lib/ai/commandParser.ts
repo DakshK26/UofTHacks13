@@ -301,19 +301,23 @@ export function parseAIResponse(response: BackboardResponse): AICommand {
     }
 
     if (action === 'moveClip') {
+      // Support "current" as a special value that will be resolved by batchExecutor
+      const clipId = String(parameters.clipId || parameters.id || 'current');
       return {
         action: 'moveClip',
-        clipId: String(parameters.clipId || parameters.id),
-        trackIndex: Number(parameters.trackIndex || parameters.track),
-        startTick: Number(parameters.startTick || parameters.start),
+        clipId,
+        trackIndex: Number(parameters.trackIndex ?? parameters.track ?? 0),
+        startTick: Number(parameters.startTick ?? parameters.start ?? 0),
       };
     }
 
     if (action === 'resizeClip') {
+      // Support "current" as a special value that will be resolved by batchExecutor
+      const clipId = String(parameters.clipId || parameters.id || 'current');
       return {
         action: 'resizeClip',
-        clipId: String(parameters.clipId || parameters.id),
-        durationTick: Number(parameters.durationTick || parameters.duration),
+        clipId,
+        durationTick: Number(parameters.durationTick || parameters.duration || 384),
       };
     }
 

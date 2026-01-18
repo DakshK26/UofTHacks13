@@ -206,9 +206,10 @@ export async function executeBatch(
     // Step 3: Resolve conflicts (offset overlapping clips)
     const conflictResolved = resolveClipConflicts(resolvedActions);
 
-    // Track created patterns and channels for "current" ID resolution
+    // Track created patterns, channels, and clips for "current" ID resolution
     let lastCreatedPatternId: string | null = null;
     let lastCreatedChannelId: string | null = null;
+    let lastCreatedClipId: string | null = null;
 
     // Helper: Get pattern ID with fallback to most recent project pattern
     const getPatternId = (): string | null => {
@@ -247,6 +248,26 @@ export async function executeBatch(
             }
         }
         console.warn('[BatchExecutor] No channel available for "current" reference');
+        return null;
+    };
+
+    // Helper: Get clip ID with fallback to most recent project clip
+    const getClipId = (): string | null => {
+        if (lastCreatedClipId) {
+            console.log('[BatchExecutor] Using batch-created clip:', lastCreatedClipId);
+            return lastCreatedClipId;
+        }
+        // Fallback: use the most recent clip from the project
+        const store = useStore.getState();
+        const clips = store.project?.playlist.clips;
+        if (clips && clips.length > 0) {
+            const lastClip = clips[clips.length - 1];
+            if (lastClip) {
+                console.log('[BatchExecutor] Using fallback clip from project:', lastClip.id);
+                return lastClip.id;
+            }
+        }
+        console.warn('[BatchExecutor] No clip available for "current" reference');
         return null;
     };
 
@@ -290,6 +311,17 @@ export async function executeBatch(
                 }
             }
 
+            // Resolve "current" clipId reference
+            if (resolvedParams.clipId === 'current') {
+                const clipId = getClipId();
+                if (clipId) {
+                    resolvedParams.clipId = clipId;
+                    console.log('[BatchExecutor] Resolved clipId "current" to:', clipId);
+                } else {
+                    console.error('[BatchExecutor] Cannot resolve "current" clipId - no clips exist');
+                }
+            }
+
             // Parse the action into a typed command
             const command = parseAIResponse({
                 action: actionData.action,
@@ -313,6 +345,12 @@ export async function executeBatch(
                 if (actionData.action === 'addChannel' && result.data?.channelId) {
                     lastCreatedChannelId = result.data.channelId;
                     console.log('[BatchExecutor] Channel created with ID:', lastCreatedChannelId);
+                }
+
+                // Track created clip IDs for subsequent "current" references
+                if (actionData.action === 'addClip' && result.data?.clipId) {
+                    lastCreatedClipId = result.data.clipId;
+                    console.log('[BatchExecutor] Clip created with ID:', lastCreatedClipId);
                 }
             } else {
                 failCount++;
