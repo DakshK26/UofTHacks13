@@ -4,7 +4,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import type { ChatAPIRequest, ChatAPIResponse } from '@/lib/ai/types';
+import type { ChatAPIRequest, ChatAPIResponse, BackboardResponse } from '@/lib/ai/types';
+import { sendToModel } from '@/lib/ai/backboard';
 
 // Rate limiting (simple in-memory implementation)
 const requestCounts = new Map<string, { count: number; resetTime: number }>();
@@ -34,10 +35,10 @@ function checkRateLimit(identifier: string): boolean {
 export async function POST(request: NextRequest) {
   try {
     // Rate limiting check
-    const clientIp = request.headers.get('x-forwarded-for') || 
-                     request.headers.get('x-real-ip') || 
-                     'unknown';
-    
+    const clientIp = request.headers.get('x-forwarded-for') ||
+      request.headers.get('x-real-ip') ||
+      'unknown';
+
     if (!checkRateLimit(clientIp)) {
       return NextResponse.json(
         {
@@ -83,32 +84,118 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // TODO: Phase 4 - Import and call Backboard integration
-    // const backboardResponse = await sendToModel(body.text, body.model, conversationHistory);
-    // const command = parseAIResponse(backboardResponse);
-    // const result = await executeCommand(command);
-
-    // Placeholder response for Phase 1
-    console.log('[AI Chat API] Received request:', {
-      text: body.text,
+    // Log request
+    const requestLog = {
+      text: body.text.substring(0, 100), // Truncate for logging
       model: body.model,
       timestamp: new Date().toISOString(),
-    });
+      hasHistory: !!body.conversationHistory?.length,
+    };
+    console.log('[AI Chat API] Request:', requestLog);
 
+    // Convert conversation history to Backboard format
+    const conversationHistory = body.conversationHistory?.map(msg => ({
+      role: msg.from === 'user' ? 'user' : 'assistant',
+      content: msg.text,
+    }));
+
+    // Call Backboard integration
+    let backboardResponse: BackboardResponse;
+    try {
+      backboardResponse = await sendToModel(
+        body.text,
+        body.model,
+        conversationHistory
+      );
+
+      // Log successful response
+      console.log('[AI Chat API] Backboard response:', {
+        action: backboardResponse.action,
+        hasParameters: !!Object.keys(backboardResponse.parameters || {}).length,
+        confidence: backboardResponse.confidence,
+        timestamp: new Date().toISOString(),
+      });
+
+    } catch (backboardError) {
+      // Log Backboard error
+      console.error('[AI Chat API] Backboard error:', {
+        error: backboardError instanceof Error ? backboardError.message : 'Unknown error',
+        timestamp: new Date().toISOString(),
+      });
+
+      // Handle specific Backboard errors
+      if (backboardError instanceof Error) {
+        const errorMessage = backboardError.message;
+
+        // Invalid API key
+        if (errorMessage.includes('Invalid Backboard API key')) {
+          return NextResponse.json(
+            {
+              success: false,
+              error: 'AI service configuration error. Please contact support.',
+            } as ChatAPIResponse,
+            { status: 503 }
+          );
+        }
+
+        // Rate limit from Backboard
+        if (errorMessage.includes('Rate limit exceeded')) {
+          return NextResponse.json(
+            {
+              success: false,
+              error: 'AI service is currently busy. Please try again in a moment.',
+            } as ChatAPIResponse,
+            { status: 429 }
+          );
+        }
+
+        // Timeout
+        if (errorMessage.includes('timeout') || errorMessage.includes('ETIMEDOUT')) {
+          return NextResponse.json(
+            {
+              success: false,
+              error: 'Request timed out. Please try again.',
+            } as ChatAPIResponse,
+            { status: 504 }
+          );
+        }
+
+        // Connection failure
+        if (errorMessage.includes('Failed to connect')) {
+          return NextResponse.json(
+            {
+              success: false,
+              error: 'Unable to connect to AI service. Please try again later.',
+            } as ChatAPIResponse,
+            { status: 503 }
+          );
+        }
+      }
+
+      // Generic error for unknown issues
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'AI service error. Please try again.',
+        } as ChatAPIResponse,
+        { status: 500 }
+      );
+    }
+
+    // Return raw structured action + metadata (no store mutation on server)
     return NextResponse.json({
       success: true,
       data: {
-        message: 'Phase 1: API endpoint ready. Backboard integration pending in Phase 4.',
-        commandResult: {
-          success: true,
-          message: 'Placeholder response',
-        },
+        message: backboardResponse.reasoning || 'Command received',
+        action: backboardResponse.action,
+        parameters: backboardResponse.parameters,
+        confidence: backboardResponse.confidence,
       },
-    } as ChatAPIResponse);
+    } as ChatAPIResponse & { data: { action: string; parameters: Record<string, any>; confidence?: number } });
 
   } catch (error) {
     console.error('[AI Chat API] Error:', error);
-    
+
     return NextResponse.json(
       {
         success: false,
