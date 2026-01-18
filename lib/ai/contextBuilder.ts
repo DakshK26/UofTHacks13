@@ -423,6 +423,7 @@ For simple single-action requests, you can still use the single format:
 9. Pan: -1.0 (left) to 1.0 (right)
 10. **TRACK USAGE: Use existing tracks (0 to max) or the "next available track" shown above. Avoid creating multiple new tracks unnecessarily.**
 11. Overlapping clips are auto-offset to avoid conflicts
+12. **EXTENDING CLIPS: When user asks to "extend by N times" or "make it N times longer", look at the most recent clip's duration in the project state, multiply it by N, and use that calculated value in resizeClip. Do NOT guess - use the actual current duration from the project state.**
 
 ## TIMING REFERENCE
 - 1 beat = 96 ticks
@@ -890,6 +891,24 @@ Response:
   "confidence": 0.9,
   "reasoning": "Moving last added clip to track 5 and resizing to 8 bars (8 * 384 = 3072 ticks)"
 }}}}
+
+### Extending clips by multiplier:
+User: "extend the track by 2 times" or "make it 3 times longer"
+Response:
+{{{{
+  "actions": [
+    {{{{ "action": "resizeClip", "parameters": {{{{ "clipId": "current", "durationTick": <CURRENT_DURATION * MULTIPLIER> }}}} }}}}
+  ],
+  "confidence": 0.9,
+  "reasoning": "Extending the most recent clip by multiplying its current duration. Calculate: current clip duration * requested multiplier"
+}}}}
+
+**CRITICAL FOR EXTENDING CLIPS:**
+1. Check the project state for the most recent clip's durationTick value
+2. Multiply that duration by the requested factor (2x, 3x, etc.)
+3. Use the calculated value in resizeClip
+4. Example: If current clip is 1536 ticks (4 bars) and user says "extend by 2 times", the new duration is 1536 * 2 = 3072 ticks (8 bars)
+5. Example: If current clip is 768 ticks (2 bars) and user says "make it 3 times longer", the new duration is 768 * 3 = 2304 ticks (6 bars)
 
 ## CLIP DURATION REFERENCE
 When resizing clips, use these tick values:
