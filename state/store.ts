@@ -191,6 +191,7 @@ interface StoreState {
   moveNotes: (patternId: UUID, noteIds: UUID[], deltaPitch: number, deltaTick: number) => void;
   resizeNotes: (patternId: UUID, noteIds: UUID[], newDuration: number) => void;
   quantizeSelectedNotes: (patternId: UUID, noteIds: UUID[], gridSize: number) => void;
+  clearPatternNotes: (patternId: UUID) => void;
 
   // Channel Actions
   addChannel: (name: string, type: ChannelType, preset?: string) => void;
@@ -421,9 +422,9 @@ export const useStore = create<StoreState>()(
 
         focusedPanel: null,
         playlistZoom: 1,
-        pianoRollZoom: 1,
+        pianoRollZoom: 1.5,
         snapToGrid: true,
-        gridSize: 24, // Quarter of a beat
+        gridSize: 24, // Quarter of a beat (16th note)
         selectedPatternId: null,
         selectedChannelId: null,
 
@@ -672,6 +673,18 @@ export const useStore = create<StoreState>()(
         // ==========================================
         // Note Actions (Piano Roll)
         // ==========================================
+
+        clearPatternNotes: (patternId) => {
+          recordHistory('Clear pattern notes', (draft) => {
+            if (draft.project) {
+              const pattern = draft.project.patterns.find((p) => p.id === patternId);
+              if (pattern) {
+                pattern.notes = [];
+                draft.project.updatedAt = new Date().toISOString();
+              }
+            }
+          });
+        },
 
         addNote: (patternId, note) => {
           let newNoteId: string | undefined;
