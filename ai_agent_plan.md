@@ -92,7 +92,7 @@ Build a conversational AI assistant that accepts natural language commands, rout
 - Create validation functions for command parameters (aligned with store constraints):
   - `validateBPM(bpm: number): boolean` - Check 20-999 range
   - `validatePitch(pitch: number): boolean` - Check 0-127 range
-  - `validateVolume(volume: number): boolean` - Check 0-2 range (TrackEffects volume)
+  - `validateVolume(volume: number): boolean` - Check 0-1.5 range (TrackEffects volume)
   - `validatePan(pan: number): boolean` - Check -1 to 1 range
   - `validateTrackIndex(index: number, maxTracks: number): boolean`
   - `validateSteps(lengthInSteps: number): boolean`
@@ -146,7 +146,8 @@ Build a conversational AI assistant that accepts natural language commands, rout
 - Create `executeChannelCommand(cmd: AddChannelCommand): CommandResult`
 - Create `executeMixerCommand(cmd: SetTrackEffectCommand | ApplyTrackEffectsCommand | SetMasterVolumeCommand): CommandResult`
 - Validate preset names against available synth presets in `domain/operations.ts` or `state/store.ts`
-- Resolve `trackIndex` ↔ `trackId` using `project.playlist.tracks`
+- Resolve `trackIndex` ↔ `trackId` using `project.playlist.tracks`, with explicit error handling:
+  - If `trackIndex` is out of bounds or the resolved `trackId` does not exist, return a failure `CommandResult` with a clear error message (do not throw or silently ignore).
 
 ### Person 5: DAW Controller - Playlist Operations & Samples
 **Files**: `lib/ai/dawController.ts` (section 4, **client-only**)
@@ -308,9 +309,13 @@ Build a conversational AI assistant that accepts natural language commands, rout
 - Add command types:
   - `AddAudioSampleCommand`: `{ action: 'addAudioSample', category?: string, subcategory?: string, sampleName?: string, sampleId?: string, trackIndex?: number }`
 - Import `SampleLibrary` from `lib/audio/SampleLibrary.ts` (client)
-- Search library by `sampleId`, `category/subcategory`, or tag/name
-- Convert to `storageUrl` from library path and call:
-  1) `addAudioAssetFromUrl({ name, fileName, storageUrl, duration })`
+- For a matched sample, resolve its library path to a `storageUrl`.
+- Obtain the sample duration **in seconds** for `addAudioAssetFromUrl`:
+  - Prefer duration metadata from the sample library JSON (e.g. `durationSeconds` exposed by `SampleLibrary`) when available.
+  - If metadata duration is not available, calculate it on the client by fetching the audio file from `storageUrl` and decoding it with the Web Audio API (`AudioContext.decodeAudioData`), then using `audioBuffer.duration`.
+- With `durationSeconds` resolved, call:
+  1) `addAudioAssetFromUrl({ name, fileName, storageUrl, duration: durationSeconds })`
+  2) Compute `durationTick` from `durationSeconds` using project tempo + PPQ (e.g. `seconds → beats → ticks`), then call `addAudioSampleToNewTrack(assetId, name, startTick, durationTick)`
   2) `addAudioSampleToNewTrack(assetId, name, startTick, durationTick)`
 - Optional: place on existing track with `addClip` if `trackIndex` provided
 
