@@ -6,3 +6,6 @@ backend/.venv
 .venv/
 venv/
 env/
+.venv/
+venv/
+env/
