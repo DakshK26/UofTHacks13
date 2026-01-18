@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useStore } from '@/state/store';
 import type { ChatMessage, BackboardResponse, BackboardBatchResponse } from '@/lib/ai/types';
 import { undoLastAIAction, canUndoAIAction } from '@/lib/ai/undoHandler';
@@ -25,115 +25,38 @@ function formatRelativeTime(timestamp: number): string {
   return `${days}d ago`;
 }
 
-// Model info badge component
-interface ModelInfoBadgeProps {
-  taskType: string;
-  provider: string;
-  model: string;
-}
-
-function ModelInfoBadge({ taskType, provider, model }: ModelInfoBadgeProps) {
-  // Task type styling
-  const getTaskStyle = () => {
-    switch (taskType) {
-      case 'creative':
-        return 'bg-purple-500/20 text-purple-300 border border-purple-500/30';
-      case 'analytical':
-        return 'bg-orange-500/20 text-orange-300 border border-orange-500/30';
-      default: // technical
-        return 'bg-blue-500/20 text-blue-300 border border-blue-500/30';
-    }
-  };
-
-  const getTaskLabel = () => {
-    switch (taskType) {
-      case 'creative':
-        return '✨ Creative';
-      case 'analytical':
-        return '🔍 Analytical';
-      default:
-        return '⚙️ Technical';
-    }
-  };
-
-  // Provider styling
-  const getProviderStyle = () => {
-    switch (provider) {
-      case 'google':
-        return 'bg-green-500/20 text-green-300 border border-green-500/30';
-      case 'anthropic':
-        return 'bg-amber-500/20 text-amber-300 border border-amber-500/30';
-      default: // openai
-        return 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30';
-    }
-  };
-
-  const getProviderLabel = () => {
-    switch (provider) {
-      case 'google':
-        return '🌐 Gemini';
-      case 'anthropic':
-        return '🧠 Claude';
-      default:
-        return '🤖 GPT-4o';
-    }
-  };
-
-  return (
-    <div className="flex items-center gap-1.5 text-2xs">
-      <span className={`px-1.5 py-0.5 rounded-full ${getTaskStyle()}`}>
-        {getTaskLabel()}
-      </span>
-      <span className={`px-1.5 py-0.5 rounded-full ${getProviderStyle()}`}>
-        {getProviderLabel()}
-      </span>
-    </div>
-  );
-}
-
-// Message component with improved styling
+// Message component with clean Vercel-style design
 interface MessageProps {
   message: ChatMessage;
-  modelInfo?: { taskType: string; provider: string; model: string };
 }
 
-function Message({ message, modelInfo }: MessageProps) {
+function Message({ message }: MessageProps) {
   const isUser = message.from === 'user';
   const isError = message.status === 'error';
   const isSending = message.status === 'sending';
 
   return (
-    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4 animate-fade-in`}>
+    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-3`}>
       <div className={`max-w-[85%] ${isUser ? 'order-2' : 'order-1'}`}>
-        {/* Model info badge for agent messages */}
-        {!isUser && modelInfo && (
-          <div className="mb-1.5 px-1">
-            <ModelInfoBadge
-              taskType={modelInfo.taskType}
-              provider={modelInfo.provider}
-              model={modelInfo.model}
-            />
-          </div>
-        )}
         <div
-          className={`px-4 py-3 ${isUser
-            ? 'ai-message-user'
+          className={`px-3.5 py-2.5 text-sm leading-relaxed ${isUser
+            ? 'bg-white text-black rounded-2xl rounded-br-md'
             : isError
-              ? 'bg-red-900/50 border border-red-500/30 text-red-100 rounded-2xl'
-              : 'ai-message-agent'
+              ? 'bg-red-950/50 border border-red-900/50 text-red-200 rounded-2xl rounded-bl-md'
+              : 'bg-zinc-900 border border-zinc-800 text-zinc-100 rounded-2xl rounded-bl-md'
             } ${isSending ? 'opacity-60' : ''}`}
         >
-          <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">{message.text}</p>
+          <p className="whitespace-pre-wrap break-words">{message.text}</p>
         </div>
-        <div className={`flex items-center gap-2 mt-1.5 px-2 ${isUser ? 'justify-end' : 'justify-start'}`}>
-          <span className="text-xs text-ps-text-dim">
+        <div className={`flex items-center gap-2 mt-1 px-1 ${isUser ? 'justify-end' : 'justify-start'}`}>
+          <span className="text-[10px] text-zinc-600">
             {formatRelativeTime(message.timestamp)}
           </span>
           {isSending && (
-            <span className="text-xs text-ps-text-muted">Sending...</span>
+            <span className="text-[10px] text-zinc-500">Sending...</span>
           )}
           {isError && (
-            <span className="text-xs text-red-400">Failed</span>
+            <span className="text-[10px] text-red-500">Failed</span>
           )}
         </div>
       </div>
@@ -141,27 +64,15 @@ function Message({ message, modelInfo }: MessageProps) {
   );
 }
 
-// AI typing indicator component with model routing info
-interface TypingIndicatorProps {
-  classifyingText?: string;
-}
-
-function TypingIndicator({ classifyingText }: TypingIndicatorProps) {
+// Minimal typing indicator
+function TypingIndicator() {
   return (
-    <div className="flex justify-start mb-4">
-      <div className="max-w-[85%]">
-        {/* Show what's happening */}
-        <div className="mb-1.5 px-1">
-          <span className="text-2xs text-indigo-400 animate-pulse">
-            {classifyingText || '🔄 Analyzing request...'}
-          </span>
-        </div>
-        <div className="ai-message-agent px-4 py-3">
-          <div className="ai-typing-indicator">
-            <span />
-            <span />
-            <span />
-          </div>
+    <div className="flex justify-start mb-3">
+      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl rounded-bl-md px-4 py-3">
+        <div className="flex gap-1">
+          <span className="w-1.5 h-1.5 bg-zinc-500 rounded-full animate-pulse" style={{ animationDelay: '0ms' }} />
+          <span className="w-1.5 h-1.5 bg-zinc-500 rounded-full animate-pulse" style={{ animationDelay: '150ms' }} />
+          <span className="w-1.5 h-1.5 bg-zinc-500 rounded-full animate-pulse" style={{ animationDelay: '300ms' }} />
         </div>
       </div>
     </div>
@@ -179,15 +90,11 @@ export default function ChatPanel() {
   const [inputText, setInputText] = useState('');
   const [textareaRows, setTextareaRows] = useState(1);
   const [pendingModelInfo, setPendingModelInfo] = useState<ModelInfo | null>(null);
-  const [messageModelInfoMap, setMessageModelInfoMap] = useState<Map<string, ModelInfo>>(new Map());
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const {
-    chat,
-  } = useStore();
-
-  const { messages, isPending, selectedModel, lastAICommandId } = chat;
+  const { chat } = useStore();
+  const { messages, isPending, selectedModel } = chat;
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -197,8 +104,6 @@ export default function ChatPanel() {
   // Auto-resize textarea based on content
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInputText(e.target.value);
-
-    // Calculate rows (max 5)
     const lineCount = e.target.value.split('\n').length;
     const newRows = Math.min(lineCount, 5);
     setTextareaRows(newRows);
@@ -209,36 +114,26 @@ export default function ChatPanel() {
     if (!inputText.trim() || isPending) return;
 
     const userMessage = inputText.trim();
-
-    // Clear input and reset textarea
     setInputText('');
     setTextareaRows(1);
 
-    // Add user message to chat immediately
-    const userMessageId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     chat.addMessage('user', userMessage, 'sent');
-
-    // Set pending state
     chat.setPending(true);
 
     try {
-      // Build dynamic context from current project state and sample library
       const project = useStore.getState().project;
       const sampleLibrary = await loadSampleLibrary();
       const dawContext = buildDAWContext(project, sampleLibrary);
       const systemPrompt = generateSystemPrompt(dawContext);
 
-      // Call API endpoint with context
       const response = await fetch('/api/chat', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           text: userMessage,
           model: selectedModel,
-          conversationHistory: messages.slice(-5), // Last 5 messages for context
-          systemPrompt, // Dynamic context for the AI
+          conversationHistory: messages.slice(-5),
+          systemPrompt,
         }),
       });
 

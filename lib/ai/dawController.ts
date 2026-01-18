@@ -523,10 +523,16 @@ export async function executeSampleCommand(cmd: AddAudioSampleCommand): Promise<
         color: '#4a9eff',
       });
 
+      // Get the created clip ID (it's the last clip added to the playlist)
+      const updatedProject = useStore.getState().project;
+      const clips = updatedProject?.playlist.clips || [];
+      const createdClip = clips[clips.length - 1];
+      const clipId = createdClip?.id;
+
       return {
         success: true,
         message: `Added sample "${sample.name}" to track ${cmd.trackIndex + 1} at tick ${startTick}`,
-        data: { assetId, samplePath: sample.path, trackIndex: cmd.trackIndex, startTick },
+        data: { assetId, samplePath: sample.path, trackIndex: cmd.trackIndex, startTick, clipId },
       };
     } else {
       // Create new track with the sample

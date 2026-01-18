@@ -352,6 +352,12 @@ export async function executeBatch(
                     lastCreatedClipId = result.data.clipId;
                     console.log('[BatchExecutor] Clip created with ID:', lastCreatedClipId);
                 }
+
+                // Track created clip IDs from addAudioSample for subsequent "current" references
+                if (actionData.action === 'addAudioSample' && result.data?.clipId) {
+                    lastCreatedClipId = result.data.clipId;
+                    console.log('[BatchExecutor] Audio clip created with ID:', lastCreatedClipId);
+                }
             } else {
                 failCount++;
                 console.error('[BatchExecutor] Action failed:', actionData.action, result.message);

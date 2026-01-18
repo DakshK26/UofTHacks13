@@ -25,7 +25,7 @@
   --ps-accent-primary-muted: rgba(255, 122, 74, 0.3);
   --ps-accent-secondary: #4ecdc4;
   --ps-accent-tertiary: #ffe66d;
-  
+
   /* AI accent - distinct glow color */
   --ps-ai-accent: #6366f1;
   --ps-ai-accent-glow: rgba(99, 102, 241, 0.2);
@@ -41,18 +41,18 @@
   --ps-grid-line: #1e1e1e;
   --ps-grid-beat: #2a2a2a;
   --ps-grid-bar: #3a3a3a;
-  
+
   /* Transitions */
   --ps-transition-fast: 100ms ease;
   --ps-transition-normal: 150ms ease;
   --ps-transition-smooth: 200ms cubic-bezier(0.4, 0, 0.2, 1);
-  
+
   /* Shadows */
   --ps-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
   --ps-shadow-md: 0 4px 8px rgba(0, 0, 0, 0.4);
   --ps-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
   --ps-shadow-glow: 0 0 20px rgba(255, 122, 74, 0.15);
-  
+
   /* Border radius */
   --ps-radius-sm: 4px;
   --ps-radius-md: 6px;
@@ -596,7 +596,7 @@ input[type="range"]:hover::-moz-range-thumb {
   overflow: visible;
   position: absolute;
   /* Subtle gradient overlay */
-  background-image: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, transparent 40%, transparent 100%);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, transparent 40%, transparent 100%);
 }
 
 .clip::before {
@@ -606,7 +606,7 @@ input[type="range"]:hover::-moz-range-thumb {
   left: 0;
   right: 0;
   height: 2px;
-  background: rgba(255,255,255,0.2);
+  background: rgba(255, 255, 255, 0.2);
   border-radius: var(--ps-radius-sm) var(--ps-radius-sm) 0 0;
   opacity: 0;
   transition: opacity var(--ps-transition-fast);
@@ -758,321 +758,236 @@ input[type="range"]:hover::-moz-range-thumb {
   50% {
     background-color: #c0392b;
   }
-}
 
-.recording-indicator {
-  animation: recording-blink 1s infinite;
-}
+  /* AI Assistant Panel Styles - Vercel Inspired */
 
-/* ============================================ */
-/* Step Sequencer */
-/* ============================================ */
+  .recording-indicator {
+    /* Chat panel uses Tailwind classes directly in component */
+    /* These are fallback/legacy styles kept for compatibility */
 
-.step {
-  border-radius: 3px;
-  cursor: pointer;
-  transition: all var(--ps-transition-fast);
-}
+    animation: recording-blink 1s infinite;
+    background: #000000;
+    border-left: 1px solid #18181b;
+    /* ============================================ */
+    /* Step Sequencer */
+    /* ============================================ */
 
-.step:hover {
-  transform: scale(1.1);
-  box-shadow: 0 0 8px rgba(255, 255, 255, 0.1);
-}
+    background: transparent;
+    border-bottom: 1px solid #18181b;
+    padding: 12px 16px;
 
-.step-active {
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
-}
+    .step-playing {
+      box-shadow: 0 0 12px var(--ps-accent-primary);
+      background: #ffffff;
+      color: #000000;
+      /* ============================================ */
+      /* Transport */
+      /* ============================================ */
 
-.step-playing {
-  box-shadow: 0 0 12px var(--ps-accent-primary);
-}
+      background: #18181b;
+      border: 1px solid #27272a;
+      color: #fafafa;
+      border: 1px solid var(--ps-bg-600);
+      border-radius: 3px;
+      padding: 4px 8px;
+      font-size: 14px;
+      background: transparent;
+      border-top: 1px solid #18181b;
 
-/* ============================================ */
-/* Transport */
-/* ============================================ */
+      /* ============================================ */
+      /* Context Menu */
+      background: #18181b;
+      border: 1px solid #27272a;
+      border-radius: 12px;
+      background: var(--ps-bg-700);
+      border: 1px solid var(--ps-bg-500);
+      border-radius: 4px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+      border-color: #3f3f46;
+      box-shadow: none;
+    }
 
-.transport-display {
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  background: var(--ps-bg-900);
-  border: 1px solid var(--ps-bg-600);
-  border-radius: 3px;
-  padding: 4px 8px;
-  font-size: 14px;
-  letter-spacing: 1px;
-}
+    .context-menu-item {
+      background: #ffffff;
+      border-radius: 8px;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #e4e4e7;
+      transform: none;
 
-/* ============================================ */
-/* Context Menu */
-/* ============================================ */
+      .context-menu-item:hover {
+        background: var(--ps-bg-600);
+      }
 
-.context-menu {
-  background: var(--ps-bg-700);
-  border: 1px solid var(--ps-bg-500);
-  border-radius: 4px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-  padding: 4px 0;
-  min-width: 160px;
-}
+      transform: scale(0.97);
 
-.context-menu-item {
-  padding: 6px 12px;
-  cursor: pointer;
-  font-size: 11px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+      .context-menu-separator {
+        height: 1px;
 
-.context-menu-item:hover {
-  background: var(--ps-bg-600);
-}
+        .ai-send-btn:disabled {
+          background: #27272a;
 
-.context-menu-separator {
-  height: 1px;
-  background: var(--ps-bg-500);
-  margin: 4px 0;
-}
+          .tooltip {
+            background: var(--ps-bg-600);
+            border: 1px solid var(--ps-bg-500);
 
-/* ============================================ */
-/* Tooltip */
-/* ============================================ */
+            0%,
+            100% {
+              opacity: 0.4;
+              font-size: 10px;
+              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+              white-space: nowrap;
+            }
 
-.tooltip {
-  background: var(--ps-bg-600);
-  border: 1px solid var(--ps-bg-500);
-  border-radius: 3px;
-  padding: 4px 8px;
-  font-size: 10px;
-  color: var(--ps-text-primary);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-  white-space: nowrap;
-}
+            /* ============================================ */
+            /* Loading */
+            /* ============================================ */
 
-/* ============================================ */
-/* Loading */
-/* ============================================ */
+            .loading-spinner {
+              border: 2px solid var(--ps-bg-500);
+              border-top-color: var(--ps-accent-primary);
+              border-radius: 50%;
+              animation: spin 0.8s linear infinite;
+            }
 
-.loading-spinner {
-  border: 2px solid var(--ps-bg-500);
-  border-top-color: var(--ps-accent-primary);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
+            @keyframes spin {
+              to {}
+            }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
+            .ai-input {
+              background: var(--ps-bg-800);
+              border: 1px solid rgba(99, 102, 241, 0.2);
+              border-radius: var(--ps-radius-lg);
+              transition: all var(--ps-transition-normal);
+            }
 
-/* ============================================ */
-/* Modal Animations */
-/* ============================================ */
+            .ai-input:focus {
+              border-color: var(--ps-ai-accent);
+              box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+            }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
+            .ai-send-btn {
+              background: var(--ps-ai-accent);
+              border-radius: var(--ps-radius-md);
+              transition: all var(--ps-transition-fast);
+            }
 
-  to {
-    opacity: 1;
-  }
-}
+            .ai-send-btn:hover {
+              background: #818cf8;
+              transform: scale(1.05);
+            }
 
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px) scale(0.98);
-  }
+            .ai-send-btn:active {
+              transform: scale(0.95);
+            }
 
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
+            .ai-model-pill {
+              background: rgba(99, 102, 241, 0.15);
+              border: 1px solid rgba(99, 102, 241, 0.3);
+              border-radius: 999px;
+              padding: 4px 10px;
+              font-size: 10px;
+              font-weight: 500;
+              color: #a5b4fc;
+            }
 
-.animate-fadeIn {
-  animation: fadeIn 0.2s ease-out;
-}
+            @keyframes ai-pulse {
 
-.animate-slideUp {
-  animation: slideUp 0.25s ease-out;
-}
+              0%,
+              100% {
+                opacity: 0.5;
+              }
 
-/* ============================================ */
-/* AI Assistant Panel Styles */
-/* ============================================ */
+              50% {
+                opacity: 1;
+              }
+            }
 
-.ai-panel {
-  background: linear-gradient(180deg, #151520 0%, #0d0d12 100%);
-  border-left: 1px solid rgba(99, 102, 241, 0.2);
-  position: relative;
-}
+            .ai-typing-indicator {
+              display: flex;
+              gap: 4px;
+              padding: 8px 12px;
+            }
 
-.ai-panel::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 100px;
-  background: radial-gradient(ellipse at top, rgba(99, 102, 241, 0.08) 0%, transparent 70%);
-  pointer-events: none;
-}
+            .ai-typing-indicator span {
+              width: 6px;
+              height: 6px;
+              background: var(--ps-ai-accent);
+              border-radius: 50%;
+              animation: ai-pulse 1.4s ease-in-out infinite;
+            }
 
-.ai-panel-header {
-  background: rgba(99, 102, 241, 0.05);
-  border-bottom: 1px solid rgba(99, 102, 241, 0.15);
-  padding: 14px 16px;
-}
+            .ai-typing-indicator span:nth-child(2) {
+              animation-delay: 0.2s;
+            }
 
-.ai-message-user {
-  background: var(--ps-accent-primary);
-  color: white;
-  border-radius: 16px 16px 4px 16px;
-}
+            .ai-typing-indicator span:nth-child(3) {
+              animation-delay: 0.4s;
+            }
 
-.ai-message-agent {
-  background: rgba(99, 102, 241, 0.1);
-  border: 1px solid rgba(99, 102, 241, 0.2);
-  color: var(--ps-text-primary);
-  border-radius: 16px 16px 16px 4px;
-}
+            /* ============================================ */
+            /* Hover States */
+            /* ============================================ */
 
-.ai-input-container {
-  background: rgba(99, 102, 241, 0.05);
-  border-top: 1px solid rgba(99, 102, 241, 0.15);
-}
+            .hover-highlight {
+              transition: background var(--ps-transition-fast);
+            }
 
-.ai-input {
-  background: var(--ps-bg-800);
-  border: 1px solid rgba(99, 102, 241, 0.2);
-  border-radius: var(--ps-radius-lg);
-  transition: all var(--ps-transition-normal);
-}
+            .hover-highlight:hover {
+              background: rgba(255, 255, 255, 0.03);
+            }
 
-.ai-input:focus {
-  border-color: var(--ps-ai-accent);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
-}
+            .hover-scale {
+              transition: transform var(--ps-transition-fast);
+            }
 
-.ai-send-btn {
-  background: var(--ps-ai-accent);
-  border-radius: var(--ps-radius-md);
-  transition: all var(--ps-transition-fast);
-}
+            .hover-scale:hover {
+              transform: scale(1.02);
+            }
 
-.ai-send-btn:hover {
-  background: #818cf8;
-  transform: scale(1.05);
-}
+            /* Active state glow for patterns/tracks */
+            .active-glow {
+              box-shadow: 0 0 0 1px var(--ps-accent-primary), 0 0 12px rgba(255, 122, 74, 0.2);
+            }
 
-.ai-send-btn:active {
-  transform: scale(0.95);
-}
+            /* ============================================ */
+            /* List Item Styles */
+            /* ============================================ */
 
-.ai-model-pill {
-  background: rgba(99, 102, 241, 0.15);
-  border: 1px solid rgba(99, 102, 241, 0.3);
-  border-radius: 999px;
-  padding: 4px 10px;
-  font-size: 10px;
-  font-weight: 500;
-  color: #a5b4fc;
-}
+            .list-item {
+              padding: 10px 14px;
+              border-radius: var(--ps-radius-sm);
+              transition: all var(--ps-transition-fast);
+              cursor: pointer;
+            }
 
-@keyframes ai-pulse {
-  0%, 100% {
-    opacity: 0.5;
-  }
-  50% {
-    opacity: 1;
-  }
-}
+            .list-item:hover {
+              background: rgba(255, 255, 255, 0.04);
+            }
 
-.ai-typing-indicator {
-  display: flex;
-  gap: 4px;
-  padding: 8px 12px;
-}
+            .list-item-active {
+              background: rgba(255, 122, 74, 0.12);
+              font-weight: 600;
+            }
 
-.ai-typing-indicator span {
-  width: 6px;
-  height: 6px;
-  background: var(--ps-ai-accent);
-  border-radius: 50%;
-  animation: ai-pulse 1.4s ease-in-out infinite;
-}
+            .list-item-active:hover {
+              background: rgba(255, 122, 74, 0.18);
+            }
 
-.ai-typing-indicator span:nth-child(2) {
-  animation-delay: 0.2s;
-}
+            /* ============================================ */
+            /* Dividers */
+            /* ============================================ */
 
-.ai-typing-indicator span:nth-child(3) {
-  animation-delay: 0.4s;
-}
+            .divider {
+              height: 1px;
+              background: var(--ps-bg-600);
+              margin: 8px 0;
+            }
 
-/* ============================================ */
-/* Hover States */
-/* ============================================ */
-
-.hover-highlight {
-  transition: background var(--ps-transition-fast);
-}
-
-.hover-highlight:hover {
-  background: rgba(255, 255, 255, 0.03);
-}
-
-.hover-scale {
-  transition: transform var(--ps-transition-fast);
-}
-
-.hover-scale:hover {
-  transform: scale(1.02);
-}
-
-/* Active state glow for patterns/tracks */
-.active-glow {
-  box-shadow: 0 0 0 1px var(--ps-accent-primary), 0 0 12px rgba(255, 122, 74, 0.2);
-}
-
-/* ============================================ */
-/* List Item Styles */
-/* ============================================ */
-
-.list-item {
-  padding: 10px 14px;
-  border-radius: var(--ps-radius-sm);
-  transition: all var(--ps-transition-fast);
-  cursor: pointer;
-}
-
-.list-item:hover {
-  background: rgba(255, 255, 255, 0.04);
-}
-
-.list-item-active {
-  background: rgba(255, 122, 74, 0.12);
-  font-weight: 600;
-}
-
-.list-item-active:hover {
-  background: rgba(255, 122, 74, 0.18);
-}
-
-/* ============================================ */
-/* Dividers */
-/* ============================================ */
-
-.divider {
-  height: 1px;
-  background: var(--ps-bg-600);
-  margin: 8px 0;
-}
-
-.divider-vertical {
-  width: 1px;
-  background: var(--ps-bg-600);
-  margin: 0 8px;
-}
+            .divider-vertical {
+              width: 1px;
+              background: var(--ps-bg-600);
+              margin: 0 8px;
+            }
