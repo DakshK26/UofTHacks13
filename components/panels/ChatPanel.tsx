@@ -2,7 +2,9 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useStore } from '@/state/store';
-import type { ChatMessage } from '@/lib/ai/types';
+import type { ChatMessage, BackboardResponse } from '@/lib/ai/types';
+import { parseAIResponse } from '@/lib/ai/commandParser';
+import { executeCommand } from '@/lib/ai/dawController';
 
 // Format timestamp as relative time
 function formatRelativeTime(timestamp: number): string {
@@ -100,20 +102,121 @@ export default function ChatPanel() {
     setTextareaRows(newRows);
   };
 
-  // Handle sending messages (placeholder for Phase 4)
-  const handleSend = () => {
+  // Handle sending messages
+  const handleSend = async () => {
     if (!inputText.trim() || isPending) return;
 
-    // Add user message
-    chat.addMessage('user', inputText.trim());
+    const userMessage = inputText.trim();
+    
+    // Clear input and reset textarea
     setInputText('');
     setTextareaRows(1);
 
-    // TODO Phase 4: Make API call
-    // For now, just add a placeholder response
+    // Add user message to chat immediately
+    const userMessageId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    chat.addMessage('user', userMessage, 'sent');
+
+    // Set pending state
+    chat.setPending(true);
+
+    try {
+      // Call API endpoint
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: userMessage,
+          model: selectedModel,
+          conversationHistory: messages.slice(-5), // Last 5 messages for context
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `API error: ${response.status}`);
+      }
+
+      const apiResponse = await response.json();
+
+      // Check if API returned success
+      if (!apiResponse.success) {
+        throw new Error(apiResponse.error || 'Unknown API error');
+      }
+
+      // Parse and execute the AI command
+      if (apiResponse.data?.commandResult) {
+        const backboardResponse = apiResponse.data.commandResult as BackboardResponse;
+        
+        try {
+          // Parse the AI response
+          const command = parseAIResponse(backboardResponse);
+          
+          // Execute the command
+          const result = executeCommand(command);
+          
+          // Add response message based on result
+          if (result.success) {
+            chat.addMessage('agent', result.message, 'sent');
+            
+            // Track command for undo functionality
+            if (result.data?.commandId) {
+              chat.setLastCommand(result.data.commandId);
+            }
+          } else {
+            chat.addMessage('agent', `Error: ${result.message}`, 'error');
+          }
+        } catch (parseError) {
+          console.error('Command parsing/execution error:', parseError);
+          chat.addMessage(
+            'agent',
+            `Failed to execute command: ${parseError instanceof Error ? parseError.message : 'Unknown error'}`,
+            'error'
+          );
+        }
+      } else if (apiResponse.data?.message) {
+        // If no command, just show the message
+        chat.addMessage('agent', apiResponse.data.message, 'sent');
+      } else {
+        chat.addMessage('agent', 'Received response but no actionable command.', 'sent');
+      }
+    } catch (error) {
+      console.error('API call error:', error);
+      
+      // Show error message in chat
+      const errorMessage = error instanceof Error ? error.message : 'Network error occurred';
+      chat.addMessage(
+        'agent',
+        `Failed to process your request: ${errorMessage}`,
+        'error'
+      );
+      
+      // Show toast notification for network errors
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        showErrorToast('Network error - please check your connection');
+      } else {
+        showErrorToast(errorMessage);
+      }
+    } finally {
+      // Clear pending state
+      chat.setPending(false);
+    }
+  };
+
+  // Show error toast notification
+  const showErrorToast = (message: string) => {
+    // Create a simple toast notification
+    const toast = document.createElement('div');
+    toast.className = 'fixed bottom-4 right-4 bg-red-600 text-white px-4 py-3 rounded-lg shadow-lg z-50 animate-slide-up';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    // Remove after 4 seconds
     setTimeout(() => {
-      chat.addMessage('agent', 'Phase 4: API integration pending. Your command will be processed here.');
-    }, 500);
+      toast.classList.add('opacity-0');
+      setTimeout(() => toast.remove(), 300);
+    }, 4000);
   };
 
   // Handle keyboard shortcuts

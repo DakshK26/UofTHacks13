@@ -2,3 +2,7 @@
 node_modules
 .next
 .next
+
+# environment variables
+.env.local
+.env*.local
