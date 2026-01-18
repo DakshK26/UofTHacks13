@@ -1040,12 +1040,12 @@ export function buildSuggestionPrompt(
 
     // Build clip history summary
     const clipHistory = sortedClips.map(clip => {
-        const pattern = project.patterns.find(p => p.id === clip.patternId);
+        const pattern = clip.type === 'pattern' ? project.patterns.find(p => p.id === clip.patternId) : null;
         const startBar = Math.floor(clip.startTick / ticksPerBar) + 1;
         const endBar = Math.floor((clip.startTick + clip.durationTick) / ticksPerBar) + 1;
 
         return {
-            name: pattern?.name || clip.name || 'Unknown',
+            name: pattern?.name || 'Audio Clip',
             startBar,
             endBar,
             durationBars: Math.round(clip.durationTick / ticksPerBar),
@@ -1058,7 +1058,7 @@ export function buildSuggestionPrompt(
     const allPatterns = (project.patterns || []).map(p => ({
         id: p.id,
         name: p.name,
-        bars: p.bars || 4,
+        bars: Math.ceil(p.lengthInSteps / (p.stepsPerBeat * 4)),
         hasNotes: p.notes && p.notes.length > 0,
     }));
 

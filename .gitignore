@@ -11,3 +11,4 @@ env/
 # environment variables
 .env.local
 .env*.local
+.vercel

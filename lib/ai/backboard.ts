@@ -342,13 +342,13 @@ function mockBackboardResponse(text: string, model: string, systemPrompt?: strin
     if (systemPrompt) {
       // Extract track number from prompt
       const trackMatch = systemPrompt.match(/track (\d+)/i);
-      if (trackMatch) {
+      if (trackMatch && trackMatch[1]) {
         trackIndex = parseInt(trackMatch[1]) - 1;
       }
 
       // Extract suggested start tick from prompt
       const tickMatch = systemPrompt.match(/startTick["\s:]+(\d+)/);
-      if (tickMatch) {
+      if (tickMatch && tickMatch[1]) {
         startTick = parseInt(tickMatch[1]);
       }
 
@@ -356,17 +356,21 @@ function mockBackboardResponse(text: string, model: string, systemPrompt?: strin
       const patternRegex = /"([^"]+)" \((\d+) bars, ID: ([a-zA-Z0-9-]+)\)/g;
       let match;
       while ((match = patternRegex.exec(systemPrompt)) !== null) {
-        availablePatterns.push({
-          name: match[1],
-          bars: parseInt(match[2]),
-          id: match[3],
-        });
+        if (match[1] && match[2] && match[3]) {
+          availablePatterns.push({
+            name: match[1],
+            bars: parseInt(match[2]),
+            id: match[3],
+          });
+        }
       }
 
       // Parse track history to see what patterns were already used
       const historyRegex = /- "([^"]+)" \(Bars/g;
       while ((match = historyRegex.exec(systemPrompt)) !== null) {
-        usedPatternNames.push(match[1]);
+        if (match[1]) {
+          usedPatternNames.push(match[1]);
+        }
       }
     }
 
