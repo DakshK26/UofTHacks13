@@ -1,7 +1,16 @@
 # AI Chat Agent Implementation Plan - Pulse Studio DAW
 
 ## Overview
-Build a conversational AI assistant that accepts natural language commands, routes them through Backboard.io with model selection (Gemini/fallback), translates responses into structured DAW actions, and executes them against the Zustand store's 100+ actions.
+Build a conversational AI assistant that accepts natural language commands, routes them through Backboard.io with model selection (Gemini/fallback), translates responses into structured DAW actions, and executes them against the existing Pulse Studio store actions and UI.
+
+### Repo-Aware Constraints (from current codebase)
+- **State/actions live in** `state/store.ts` (single Zustand store). Any command execution must run on the **client** (cannot run in `app/api/*`).
+- **Patterns & piano roll** live in `project.patterns` with `Pattern.notes` (ticks) and `Pattern.lengthInSteps`. Default: `ppq=96`, `stepsPerBeat=4`, `lengthInSteps=16`.
+- **Playlist clips** use `trackIndex` (number), while **mixer effects** use **trackId** (`PlaylistTrack.id`). AI must resolve index ↔ id.
+- **Sample library** is in `public/samples/library.json` and loaded via `lib/audio/SampleLibrary.ts` (client fetch).
+- **Dropping samples** is already modeled by `addAudioAssetFromUrl()` + `addAudioSampleToNewTrack()`.
+- **Mixer** uses simple `TrackEffects` via `setTrackEffect()`, `resetTrackEffects()`, `applyTrackEffects()`.
+- **Undo/Redo** exists in store (`undo()`, `redo()`), with descriptions already stored.
 
 ---
 
@@ -23,29 +32,46 @@ Build a conversational AI assistant that accepts natural language commands, rout
 ### Person 2: Type Definitions & Schemas
 **Files**: `lib/ai/types.ts`
 
-- Define command type schemas as TypeScript interfaces:
-  - `AddPatternCommand`: `{ action: 'addPattern', name: string, lengthInSteps?: number }`
+- Define command type schemas as TypeScript interfaces **mapped to store actions**:
+  - `AddPatternCommand`: `{ action: 'addPattern', name?: string, lengthInSteps?: number }`
+  - `SetPatternLengthCommand`: `{ action: 'setPatternLength', patternId: string, lengthInSteps: number }`
   - `AddNoteCommand`: `{ action: 'addNote', patternId: string, pitch: number, startTick: number, durationTick: number, velocity?: number }`
+  - `AddPatternClipCommand`: `{ action: 'addPatternClip', patternId: string, trackIndex: number, startTick: number, durationTick: number }`
+  - `MoveClipCommand`: `{ action: 'moveClip', clipId: string, deltaX: number, deltaY: number }`
+  - `ResizeClipCommand`: `{ action: 'resizeClip', clipId: string, newDuration: number }`
+  - `SetLoopRegionCommand`: `{ action: 'setLoopRegion', startTick: number, endTick: number }`
+  - `AddChannelCommand`: `{ action: 'addChannel', name: string, type: 'synth' | 'sampler', preset?: string }`
+  - `UpdateChannelCommand`: `{ action: 'updateChannel', channelId: string, updates: Partial<Channel> }`
+  - `SetChannelVolumeCommand`: `{ action: 'setChannelVolume', channelId: string, volume: number }`
+  - `SetChannelPanCommand`: `{ action: 'setChannelPan', channelId: string, pan: number }`
+  - `ToggleChannelMuteCommand`: `{ action: 'toggleChannelMute', channelId: string }`
+  - `AddAudioSampleCommand`: `{ action: 'addAudioSample', sampleId?: string, category?: string, subcategory?: string, sampleName?: string, trackIndex?: number }`
+  - `AddAudioSampleToNewTrackCommand`: `{ action: 'addAudioSampleToNewTrack', assetId: string, name: string, startTick: number, durationTick: number }`
+  - `SetTrackEffectCommand`: `{ action: 'setTrackEffect', trackId: string, key: keyof TrackEffects, value: number }`
+  - `ResetTrackEffectsCommand`: `{ action: 'resetTrackEffects', trackId: string }`
+  - `ApplyTrackEffectsCommand`: `{ action: 'applyTrackEffects', trackId: string }`
+  - `SetMasterVolumeCommand`: `{ action: 'setMasterVolume', volume: number }`
+  - `TogglePlaylistTrackMuteCommand`: `{ action: 'togglePlaylistTrackMute', trackId: string }`
+  - `TogglePlaylistTrackSoloCommand`: `{ action: 'togglePlaylistTrackSolo', trackId: string }`
   - `SetBPMCommand`: `{ action: 'setBpm', bpm: number }`
-  - `AddChannelCommand`: `{ action: 'addChannel', type: 'synth' | 'sampler', preset?: string }`
-  - `AddClipCommand`: `{ action: 'addClip', patternId: string, trackIndex: number, startTick: number }`
-  - `PlayCommand`, `StopCommand`, `SetVolumeCommand`, etc.
+  - `PlayCommand`, `StopCommand`, `PauseCommand`, `SetPositionCommand`
+  - `SelectPatternCommand`, `SelectChannelCommand`, `OpenPianoRollCommand`, `FocusPanelCommand`
 - Define `AICommand` union type of all command types
 - Define `CommandResult`: `{ success: boolean, message: string, data?: any }`
 - Define `BackboardResponse`: `{ action: string, parameters: Record<string, any> }`
 
-### Person 3: API Endpoint
+### Person 3: API Endpoint (Server)
 **Files**: `app/api/chat/route.ts`
 
 - Create `POST /api/chat` endpoint
 - Validate request body schema: `{ text: string, model: string }`
-- Import `sendToModel` from Person 1's module (will integrate in Phase 4)
-- Return response: `{ success: boolean, data?: any, error?: string }`
+- Import `sendToModel` from Person 1's module
+- **Return only the AI response** (no store mutation on server). Example: `{ success: boolean, ai: BackboardResponse | null, error?: string }`
 - Add error handling for missing fields, invalid model names
 - Add basic rate limiting (optional)
 
 ### Person 4: Chat State Management
-**Files**: `state/slices/chatSlice.ts`
+**Files**: `state/slices/chatSlice.ts`, `state/store.ts`
 
 - Create Zustand slice with state:
   - `messages: Array<{ id: string, from: 'user' | 'agent', text: string, timestamp: number }>`
@@ -58,17 +84,19 @@ Build a conversational AI assistant that accepts natural language commands, rout
   - `setPending(isPending)`
   - `setLastCommand(commandId)`
   - `clearHistory()`
-- Integrate into main store in `state/store.ts`
+- Integrate into main store in `state/store.ts` (single-store architecture)
 
 ### Person 5: Command Validation Utilities
 **Files**: `lib/ai/validators.ts`
 
-- Create validation functions for command parameters:
+- Create validation functions for command parameters (aligned with store constraints):
   - `validateBPM(bpm: number): boolean` - Check 20-999 range
   - `validatePitch(pitch: number): boolean` - Check 0-127 range
-  - `validateVolume(volume: number): boolean` - Check 0-1.5 range
+  - `validateVolume(volume: number): boolean` - Check 0-2 range (TrackEffects volume)
   - `validatePan(pan: number): boolean` - Check -1 to 1 range
   - `validateTrackIndex(index: number, maxTracks: number): boolean`
+  - `validateSteps(lengthInSteps: number): boolean`
+  - `validateTicks(startTick: number, durationTick: number): boolean`
 - Return descriptive error messages
 - Export validation schemas
 
@@ -76,7 +104,7 @@ Build a conversational AI assistant that accepts natural language commands, rout
 
 ---
 
-## Phase 2: Command Processing
+## Phase 2: Command Processing (Client-side Execution)
 **Goal**: Parse AI responses and map to DAW actions. Minimal cross-dependencies.
 
 ### Person 1: Command Parser Core
@@ -90,18 +118,19 @@ Build a conversational AI assistant that accepts natural language commands, rout
 - Add comprehensive JSDoc comments
 
 ### Person 2: DAW Controller - Pattern & Note Operations
-**Files**: `lib/ai/dawController.ts` (section 1)
+**Files**: `lib/ai/dawController.ts` (section 1, **client-only**)
 
-- Import store actions from `state/store.ts`: `addPattern`, `addNote`, `updateNote`, `deletePattern`
+- Import store actions from `state/store.ts`: `addPattern`, `setPatternLength`, `addNote`, `updateNote`, `deletePattern`, `selectPattern`, `openPianoRoll`
 - Import validators from `lib/ai/validators.ts`
 - Create `executePatternCommand(cmd: AddPatternCommand): CommandResult`
 - Create `executeNoteCommand(cmd: AddNoteCommand): CommandResult`
+- Create `executePatternClipCommand(cmd: AddPatternClipCommand): CommandResult` (uses `addClip`)
 - Validate all parameters before execution
 - Return success/error with descriptive messages
 - Use `useStore.getState()` to access store
 
 ### Person 3: DAW Controller - Playback & Transport
-**Files**: `lib/ai/dawController.ts` (section 2)
+**Files**: `lib/ai/dawController.ts` (section 2, **client-only**)
 
 - Import transport actions: `play`, `stop`, `pause`, `setBpm`, `setPosition`, `toggleMetronome`
 - Create `executeTransportCommand(cmd: PlayCommand | StopCommand | SetBPMCommand): CommandResult`
@@ -110,23 +139,26 @@ Build a conversational AI assistant that accepts natural language commands, rout
 - Return transport state confirmations
 
 ### Person 4: DAW Controller - Channels & Mixer
-**Files**: `lib/ai/dawController.ts` (section 3)
+**Files**: `lib/ai/dawController.ts` (section 3, **client-only**)
 
-- Import channel/mixer actions: `addChannel`, `updateChannel`, `setVolume`, `setPan`, `toggleMute`
-- Import mixer actions: `setMixerTrackVolume`, `addInsertEffect`, `updateEffectParameters`
+- Import channel actions: `addChannel`, `updateChannel`, `setChannelVolume`, `setChannelPan`, `toggleChannelMute`
+- Import mixer actions: `setTrackEffect`, `resetTrackEffects`, `applyTrackEffects`, `setMasterVolume`
 - Create `executeChannelCommand(cmd: AddChannelCommand): CommandResult`
-- Create `executeMixerCommand(cmd: SetVolumeCommand): CommandResult`
-- Validate preset names against available synth presets from `lib/audio/instruments/`
-- Handle invalid mixer track indices
+- Create `executeMixerCommand(cmd: SetTrackEffectCommand | ApplyTrackEffectsCommand | SetMasterVolumeCommand): CommandResult`
+- Validate preset names against available synth presets in `domain/operations.ts` or `state/store.ts`
+- Resolve `trackIndex` ↔ `trackId` using `project.playlist.tracks`
 
-### Person 5: DAW Controller - Playlist Operations
-**Files**: `lib/ai/dawController.ts` (section 4)
+### Person 5: DAW Controller - Playlist Operations & Samples
+**Files**: `lib/ai/dawController.ts` (section 4, **client-only**)
 
-- Import playlist actions: `addClip`, `deleteClip`, `moveClip`, `resizeClip`, `setLoopRegion`
-- Create `executePlaylistCommand(cmd: AddClipCommand | MoveClipCommand): CommandResult`
+- Import playlist actions: `addClip`, `deleteClip`, `moveClipAction`, `resizeClipAction`, `setLoopRegion`, `addAudioSampleToNewTrack`, `addPlaylistTrack`
+- Import asset actions: `addAudioAssetFromUrl`
+- Create `executePlaylistCommand(cmd: AddPatternClipCommand | MoveClipCommand | ResizeClipCommand): CommandResult`
+- Create `executeSampleCommand(cmd: AddAudioSampleCommand | AddAudioSampleToNewTrackCommand): CommandResult`
 - Validate track indices, tick positions
 - Ensure clip references valid patterns/assets
 - Handle clip collision detection (optional)
+- Sample resolution uses `lib/audio/SampleLibrary.ts` (client) to resolve `sampleId`/`category`/`tags` → URL
 
 **Phase 2 Testing**: Test command parser with mock AI responses, test each DAW controller section independently with unit tests.
 
@@ -177,8 +209,9 @@ Build a conversational AI assistant that accepts natural language commands, rout
 - Style error messages in red
 
 ### Person 5: Chat Panel Integration
-**Files**: `components/layout/DockingLayout.tsx`
+**Files**: `components/layout/DockingLayout.tsx`, `domain/types.ts`
 
+- Add `chat` to `PanelId` in `domain/types.ts`
 - Add ChatPanel to mosaic layout configuration
 - Position as left sidebar above Browser (20% width)
 - Add chat icon/tab to panel header
@@ -203,17 +236,18 @@ Build a conversational AI assistant that accepts natural language commands, rout
   - Set pending state
   - Add user message to chat immediately
   - Handle response/errors
-  - Add agent response to chat
+  - Parse AI response with `parseAIResponse` and execute with `executeCommand` (client-only)
+  - Add agent response to chat (success/error)
 - Add error toast notifications
 - Handle network errors gracefully
 
 ### Person 2: Command Execution Pipeline
-**Files**: `lib/ai/dawController.ts` (main executor)
+**Files**: `lib/ai/dawController.ts` (main executor, **client-only**)
 
 - Create main `executeCommand(command: AICommand): CommandResult` router
 - Switch on command.action to call appropriate executor (from Phase 2)
 - Import command parser from Phase 2
-- Chain parser → executor
+- Chain parser → executor in ChatPanel or a client controller
 - Log all executions to console
 - Return aggregated results
 
@@ -222,8 +256,7 @@ Build a conversational AI assistant that accepts natural language commands, rout
 
 - Import Backboard client from Phase 1
 - Call `sendToModel(text, model)` in POST handler
-- Import command parser and executor from Phase 2
-- Parse Backboard response → execute command → return result
+- Return raw structured action + metadata (no store mutation)
 - Add request/response logging
 - Handle Backboard API errors (timeout, rate limit, invalid key)
 
@@ -233,7 +266,7 @@ Build a conversational AI assistant that accepts natural language commands, rout
 - Create AI command tracking system
 - After each successful execution, push to `chatSlice.lastAICommandId`
 - Implement `undoLastAIAction()`:
-  - Call store's `undo()` from `state/undoRedo.ts`
+  - Call store's `undo()` from `state/store.ts`
   - Update chat with "Undone: {action description}"
   - Clear `lastAICommandId`
 - Wire Undo button in ChatPanel to this handler
@@ -256,29 +289,30 @@ Build a conversational AI assistant that accepts natural language commands, rout
 
 ---
 
-## Phase 5: Advanced Features
+## Phase 5: Advanced Features (Repo-aligned)
 **Goal**: Expand command coverage and robustness. Can work independently on different command domains.
 
 ### Person 1: Effect Commands
 **Files**: `lib/ai/commandParser.ts`, `lib/ai/dawController.ts` (effects section)
 
-- Add command types for effects:
-  - `AddEffectCommand`: `{ action: 'addEffect', trackId: string, effectType: 'reverb' | 'delay' | 'eq' | 'compressor' }`
-  - `UpdateEffectCommand`: `{ action: 'updateEffect', effectId: string, parameters: Record<string, number> }`
-- Implement effect parameter validation (decay 0-10, feedback 0-1, etc.)
-- Create executor for effect commands using `addInsertEffect`, `updateEffectParameters` from store
-- Handle invalid effect types
+- Add command types for **TrackEffects** (simple inline mixer):
+  - `SetTrackEffectCommand`: `{ action: 'setTrackEffect', trackId, key, value }`
+  - `ResetTrackEffectsCommand`: `{ action: 'resetTrackEffects', trackId }`
+  - `ApplyTrackEffectsCommand`: `{ action: 'applyTrackEffects', trackId }`
+- Implement validation ranges based on `TrackEffects` in `domain/types.ts`
+- Execute using `setTrackEffect`, `resetTrackEffects`, `applyTrackEffects`
 
 ### Person 2: Sample Loading Commands
 **Files**: `lib/ai/commandParser.ts`, `lib/ai/dawController.ts` (samples section)
 
 - Add command types:
-  - `LoadSampleCommand`: `{ action: 'loadSample', category: string, subcategory: string, sampleName: string, trackIndex?: number }`
-  - `AddSamplerCommand`: `{ action: 'addSampler', sampleUrl: string }`
-- Import `SampleLibrary` from `lib/audio/SampleLibrary.ts`
-- Search library for matching sample
-- Create sampler channel + clip with loaded sample
-- Handle sample not found errors
+  - `AddAudioSampleCommand`: `{ action: 'addAudioSample', category?: string, subcategory?: string, sampleName?: string, sampleId?: string, trackIndex?: number }`
+- Import `SampleLibrary` from `lib/audio/SampleLibrary.ts` (client)
+- Search library by `sampleId`, `category/subcategory`, or tag/name
+- Convert to `storageUrl` from library path and call:
+  1) `addAudioAssetFromUrl({ name, fileName, storageUrl, duration })`
+  2) `addAudioSampleToNewTrack(assetId, name, startTick, durationTick)`
+- Optional: place on existing track with `addClip` if `trackIndex` provided
 
 ### Person 3: Multi-Note & Pattern Commands
 **Files**: `lib/ai/commandParser.ts`, `lib/ai/dawController.ts` (sequences section)
@@ -290,16 +324,17 @@ Build a conversational AI assistant that accepts natural language commands, rout
   - "add a 4-bar drum beat" → kick/snare/hihat pattern
 - Implement batch note creation
 - Validate sequence doesn't exceed pattern length
+- Use `setPatternLength` if user requests bars longer than default (steps = bars * beatsPerBar * stepsPerBeat)
 
 ### Person 4: Mixer & Routing Commands
 **Files**: `lib/ai/commandParser.ts`, `lib/ai/dawController.ts` (mixer section)
 
 - Add command types:
-  - `SetMixerVolumeCommand`, `SetPanCommand`, `ToggleMuteCommand`, `ToggleSoloCommand`
-  - `AddSendCommand`: `{ action: 'addSend', fromTrack: number, toTrack: number, gain: number }`
-- Implement mixer track resolution (by name or index)
-- Validate mixer track indices (max tracks check)
-- Create send executors using store actions
+  - `SetTrackEffectCommand`, `ResetTrackEffectsCommand`, `ApplyTrackEffectsCommand`
+  - `SetMasterVolumeCommand`
+  - `TogglePlaylistTrackMuteCommand`, `TogglePlaylistTrackSoloCommand`
+- Implement playlist track resolution (by name or index)
+- Validate indices and existence against `project.playlist.tracks`
 
 ### Person 5: Error Handling & Logging
 **Files**: `lib/ai/logger.ts`, `lib/ai/dawController.ts` (logging)
@@ -321,10 +356,10 @@ Build a conversational AI assistant that accepts natural language commands, rout
 **Goal**: Add conversational memory, persistence, and UX refinements.
 
 ### Person 1: Conversational Context
-**Files**: `lib/ai/contextBuilder.ts`, `app/api/chat/route.ts`
+**Files**: `lib/ai/contextBuilder.ts`, `components/panels/ChatPanel.tsx`, `app/api/chat/route.ts`
 
 - Create context builder that formats last 5 messages for Backboard
-- Include current project state summary (BPM, pattern count, track count)
+- Include current project state summary (BPM, patterns count, channels count, playlist tracks/clips)
 - Modify API route to send conversation history to Backboard
 - Add system prompt defining DAW capabilities and command format
 - Test multi-turn conversations ("add a kick" → "now add a snare")
@@ -379,10 +414,12 @@ Build a conversational AI assistant that accepts natural language commands, rout
 
 ## Success Criteria
 
-- ✅ User types "add a four-bar drum loop at 100 BPM" → pattern + clip created
+- ✅ User types "add a four-bar drum loop at 100 BPM" → pattern length updated, notes created, clip placed on playlist
 - ✅ Agent response appears in chat within 2 seconds
 - ✅ Model selector switches between Gemini/fallback without errors
 - ✅ Undo button removes last AI action and updates DAW state
+- ✅ “Drop in a snare sample and mix it” → sample asset added, clip placed, track effects set + applied
+- ✅ “Create a piano pattern” → pattern created, notes added, clip placed, piano roll opened
 - ✅ Chat history persists across project save/reload
 - ✅ All 100+ DAW actions are controllable via natural language
 - ✅ Error messages are clear and actionable
@@ -398,7 +435,7 @@ Build a conversational AI assistant that accepts natural language commands, rout
 | **Person 2** | `lib/ai/types.ts`, DAW controller (patterns/notes), samples section | Command parser (collab) |
 | **Person 3** | `app/api/chat/route.ts`, DAW controller (transport), persistence | API integration |
 | **Person 4** | `state/slices/chatSlice.ts`, DAW controller (mixer), undo, shortcuts | Chat panel (collab) |
-| **Person 5** | `lib/ai/validators.ts`, DAW controller (playlist), logging, testing | Layout integration |
+| **Person 5** | `lib/ai/validators.ts`, DAW controller (playlist), logging, testing | Layout integration, `domain/types.ts` |
 
 **Chat Panel**: Persons 1-4 collaborate in Phase 3 (separate sections), Person 1 owns API integration in Phase 4.
 
