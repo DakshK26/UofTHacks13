@@ -616,7 +616,11 @@ export default function Playlist() {
       {/* Timeline Header */}
       <div className="h-6 flex border-b border-ps-bg-600 shrink-0">
         {/* Corner */}
-        <div className="w-[120px] shrink-0 bg-ps-bg-700 border-r border-ps-bg-600" />
+        <div className="w-[120px] shrink-0 bg-ps-bg-700 border-r border-ps-bg-600 flex items-center justify-center">
+          <span className="text-[9px] text-ps-text-muted/60" title="Double-click pattern clips to edit notes">
+            🎹 2x click
+          </span>
+        </div>
 
         {/* Timeline ruler */}
         <div
@@ -1329,7 +1333,7 @@ function ClipBlock({
       onDrag={handleDrag}
       onDragEnd={handleDragEnd}
       className={`absolute clip group ${clip.mute ? 'clip-muted' : ''} ${isSelected ? 'clip-selected' : ''
-        } ${isDragging ? 'opacity-50' : ''} ${!isResizing ? 'cursor-move' : ''}`}
+        } ${isDragging ? 'opacity-50' : ''} ${!isResizing ? (clip.type === 'pattern' ? 'cursor-pointer' : 'cursor-move') : ''}`}
       style={{
         left: isDragging ? x + dragOffset.x : displayX,
         top: isDragging ? y + dragOffset.y : y,
@@ -1346,6 +1350,7 @@ function ClipBlock({
       onMouseMove={handleMouseMove}
       onMouseLeave={() => setSplitPreviewX(null)}
       onContextMenu={onContextMenu}
+      title={clip.type === 'pattern' ? '🎹 Double-click to edit notes in Piano Roll' : undefined}
     >
       {/* Split preview line */}
       {splitPreviewX !== null && (
