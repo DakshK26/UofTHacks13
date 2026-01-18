@@ -9,7 +9,6 @@ import ExportDialog from '@/components/common/ExportDialog';
 
 export default function TopToolbar() {
   const {
-    project,
     hasUnsavedChanges,
     setBpm,
     undo,
@@ -27,7 +26,14 @@ export default function TopToolbar() {
     pianoRollZoom,
     setPlaylistZoom,
     setPianoRollZoom,
+    isAudioInitialized,
+    setIsAudioInitialized,
+    loadDemoProject: storeLoadDemoProject,
+    project: storeProject,
   } = useStore();
+
+  const [isInitializing, setIsInitializing] = useState(false);
+  const [initError, setInitError] = useState<string | null>(null);
 
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
@@ -88,7 +94,7 @@ export default function TopToolbar() {
     {
       label: 'Save As...',
       onClick: () => {
-        const newName = prompt('Enter new project name:', project?.name || 'Untitled Project');
+        const newName = prompt('Enter new project name:', storeProject?.name || 'Untitled Project');
         if (newName && newName.trim()) {
           // Update the project name and mark as saved
           const { updateProjectName, markSaved } = useStore.getState();
@@ -268,7 +274,7 @@ export default function TopToolbar() {
         <div className="flex items-center gap-2">
           <span className="text-xs text-ps-text-secondary">Project:</span>
           <span className="text-xs font-medium text-ps-text-primary">
-            {project?.name ?? 'Untitled'}
+            {storeProject?.name ?? 'Untitled'}
           </span>
           {hasUnsavedChanges && (
             <span className="text-xs text-ps-accent-tertiary">*</span>
@@ -281,6 +287,36 @@ export default function TopToolbar() {
         {/* Transport */}
         <Transport />
 
+        {/* Audio Initialization Fallback */}
+        {!isAudioInitialized && (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={async () => {
+                const { getAudioEngine } = await import('@/lib/audio/AudioEngine');
+                const engine = getAudioEngine();
+                setIsInitializing(true);
+                try {
+                  await engine.initialize();
+                  setIsAudioInitialized(true);
+                  // Load demo project if nothing is loaded
+                  if (!storeProject) {
+                    storeLoadDemoProject('demo-user-id');
+                  }
+                } catch (err) {
+                  setInitError(err instanceof Error ? err.message : 'Error');
+                } finally {
+                  setIsInitializing(false);
+                }
+              }}
+              disabled={isInitializing}
+              className="px-3 py-1 bg-ps-accent-primary text-white text-[10px] font-bold rounded hover:bg-ps-accent-secondary transition-colors"
+            >
+              {isInitializing ? 'INITIALIZING...' : 'ENABLE SOUND'}
+            </button>
+            {initError && <span className="text-[10px] text-red-500">{initError}</span>}
+          </div>
+        )}
+
         {/* Spacer */}
         <div className="flex-1" />
 
@@ -289,7 +325,7 @@ export default function TopToolbar() {
           <span className="text-xs text-ps-text-secondary">BPM</span>
           <input
             type="number"
-            value={project?.bpm ?? 120}
+            value={storeProject?.bpm ?? 120}
             onChange={(e) => setBpm(parseInt(e.target.value, 10) || 120)}
             className="w-14 text-center font-mono"
             min={20}

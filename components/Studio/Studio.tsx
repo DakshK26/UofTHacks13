@@ -12,12 +12,11 @@ import { useAutosave } from '@/lib/audio/useAutosave';
 import { apiClient } from '@/lib/api/client';
 
 export default function Studio({ isDemo = true, projectId }: { isDemo?: boolean; projectId?: string }) {
-    const [isAudioInitialized, setIsAudioInitialized] = useState(false);
-    const [showStartPrompt, setShowStartPrompt] = useState(true);
     const [initError, setInitError] = useState<string | null>(null);
     const [isInitializing, setIsInitializing] = useState(false);
     const [toneLoaded, setToneLoaded] = useState(false);
     const [isProjectLoading, setIsProjectLoading] = useState(false);
+    const [showStartPrompt, setShowStartPrompt] = useState(false);
 
     const {
         loadDemoProject,
@@ -26,6 +25,8 @@ export default function Studio({ isDemo = true, projectId }: { isDemo?: boolean;
         transportState,
         setPosition,
         enableAutoSave,
+        isAudioInitialized,
+        setIsAudioInitialized,
     } = useStore();
 
     // Initialize keyboard shortcuts
@@ -115,7 +116,7 @@ export default function Studio({ isDemo = true, projectId }: { isDemo?: boolean;
             console.log('Audio engine initialized');
 
             setIsAudioInitialized(true);
-            setShowStartPrompt(false);
+            // We no longer hide the prompt here as it defaults to false
 
             // Only load demo project if in demo mode and no project is loaded
             if (isDemo && !project && !projectId) {
@@ -128,7 +129,14 @@ export default function Studio({ isDemo = true, projectId }: { isDemo?: boolean;
         } finally {
             setIsInitializing(false);
         }
-    }, [loadDemoProject, isInitializing, toneLoaded, isDemo, project, projectId]);
+    }, [loadDemoProject, isInitializing, toneLoaded, isDemo, project, projectId, setIsAudioInitialized]);
+
+    // Auto-initialize audio when Tone is loaded
+    useEffect(() => {
+        if (toneLoaded && !isAudioInitialized && !isInitializing && !initError) {
+            initializeAudio();
+        }
+    }, [toneLoaded, isAudioInitialized, isInitializing, initError, initializeAudio]);
 
     // Set up audio engine position tracking
     useEffect(() => {
