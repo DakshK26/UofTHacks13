@@ -233,18 +233,6 @@ export default function LandingPage() {
             </svg>
           </div>
 
-          {/* Nav Links */}
-          <div className="hidden md:flex items-center gap-5">
-            <a href="#" className="text-[13px] text-[#999] hover:text-white transition-colors flex items-center gap-1">
-              Platform
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M6 9L12 15L18 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </a>
-            <a href="#" className="text-[13px] text-[#999] hover:text-white transition-colors">Enterprise</a>
-            <a href="#" className="text-[13px] text-[#999] hover:text-white transition-colors">Resources</a>
-            <a href="#" className="text-[13px] text-[#999] hover:text-white transition-colors">Company</a>
-          </div>
         </div>
 
         <div className="flex items-center gap-3">
@@ -706,49 +694,10 @@ export default function LandingPage() {
                   </div>
                 </div>
               ))}
-
-              <div className="pt-4">
-                <button className="text-[14px] text-black bg-white px-6 py-2.5 rounded-xl font-medium hover:bg-[#ff7a7a] hover:text-white transition-all">
-                  Privacy & trust overview
-                </button>
-              </div>
             </div>
           </div>
         </motion.section>
       </div>
-
-      {/* About Section */}
-      <motion.section
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.8 }}
-        className="px-8 lg:px-16 py-20 max-w-[1400px] mx-auto"
-      >
-        <div className="grid md:grid-cols-[200px_1fr] gap-12">
-          <div>
-            <span className="text-[13px] text-[#666]">Recent highlights</span>
-          </div>
-          <div className="space-y-6">
-            {[
-              { title: 'Introducing Sim-1', desc: 'Our smartest models capable of simulating how code runs', subdesc: 'A new category of models built to understand and predict how large codebases behave in complex, real-world scenarios.', tag: 'Research' },
-              { title: '>80% Reduction in the average time to resolution by running tickets through PlayerZero', desc: 'Cayuse achieves significant efficiency gains by automating ticket triage and resolution workflows.', tag: 'Case Study' },
-              { title: 'What is Predictive Software Quality? Software Operations in the AI Era', desc: 'A new, AI-powered approach to operating software reliably that anticipates how code will behave before deployment.', tag: 'Resources' },
-            ].map((item, i) => (
-              <div key={i} className="border-t border-[#222] pt-6">
-                <h4 className="text-[15px] font-medium mb-1">{item.title}</h4>
-                <p className="text-[13px] text-[#777] mb-1">{item.desc}</p>
-                {item.subdesc && <p className="text-[12px] text-[#555] mb-2">{item.subdesc}</p>}
-                <span className="text-[11px] text-[#555]">{item.tag}</span>
-              </div>
-            ))}
-            <a href="#" className="text-[13px] text-white flex items-center gap-2 mt-4">
-              View more posts
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 12H19M19 12L13 6M19 12L13 18" stroke="#ff7a7a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-            </a>
-          </div>
-        </div>
-      </motion.section>
 
       {/* Footer */}
       <motion.footer
