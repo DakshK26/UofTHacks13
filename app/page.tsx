@@ -589,7 +589,7 @@ export default function LandingPage() {
 
       {/* Trust & Privacy Section */}
       <div
-        className="w-full relative border-y border-[#1a1a1a] mb-20"
+        className="w-full relative border-y border-[#1a1a1a]"
         style={{
           backgroundColor: '#111111ff',
           backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px)',
